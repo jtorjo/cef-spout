@@ -206,7 +206,7 @@ public:
 		//command_line->AppendSwitch("disable-accelerated-video-decode");
 
 		// un-comment to show the built-in Chromium fps meter
-		//command_line->AppendSwitch("show-fps-counter");		
+		command_line->AppendSwitch("show-fps-counter");		
 
 		//command_line->AppendSwitch("disable-gpu-vsync");
 
@@ -297,10 +297,10 @@ public:
 	{
 		spoutID.append(to_string(fbCount));
 		fbCount++;
-		sender->CreateSender(spoutID.c_str(), 1280, 720, NULL, texFormat);
+		sender->CreateSender(spoutID.c_str(), 1280 *2, 720*2, NULL, texFormat);
 	}
 
-	string spoutID = "CEF_";
+	string spoutID = "CEF_spout_test";
 
 	int32_t width() {
 		if (shared_buffer_) {
