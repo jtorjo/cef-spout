@@ -297,7 +297,7 @@ public:
 	{
 		spoutID.append(to_string(fbCount));
 		fbCount++;
-		sender->CreateSender(spoutID.c_str(), 1280 *2, 720*2, NULL, texFormat);
+		sender->CreateSender(spoutID.c_str(), window_width(), window_height(), NULL, texFormat);
 	}
 
 	string spoutID = "CEF_spout_test";

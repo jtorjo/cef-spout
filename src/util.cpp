@@ -11,6 +11,16 @@ using namespace std;
 
 LARGE_INTEGER qi_freq_ = {};
 
+int window_width() {
+	return 6000;
+	return 1280 *2;
+}
+int window_height() {
+	return 4000;
+	return 720 * 2;
+}
+
+
 uint64_t time_now()
 {
 	if (!qi_freq_.HighPart && !qi_freq_.LowPart) {

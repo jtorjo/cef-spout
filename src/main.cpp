@@ -410,16 +410,11 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR, int)
 		}
 	}
 
-	// default to webgl aquarium demo
-	if (url.empty()) {
-		url = "https://webglsamples.org/aquarium/aquarium.html";
-	}
-	if (width <= 0) {
-		width = 1280;
-	}
-	if (height <= 0) {
-		height = 720;
-	}
+//	width = window_width();
+//	height = window_height();
+	width = 1280;
+	height = 720;
+	url = "file://D:/john/cef_browser/cef-test/b-cef-test/index.html";
 
 	// this demo uses WIC to load images .. so we need COM
 	ComInitializer com_init;
