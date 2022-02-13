@@ -14,7 +14,8 @@ endif()
 
 # Determine the platform.
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-  set(OS_MACOSX 1)
+  set(OS_MAC 1)
+  set(OS_MACOSX 1)  # For backwards compatibility.
   set(OS_POSIX 1)
 elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
   set(OS_LINUX 1)
@@ -25,13 +26,15 @@ endif()
 
 # Determine the project architecture.
 if(NOT DEFINED PROJECT_ARCH)
-  if(CMAKE_SIZEOF_VOID_P MATCHES 8)
+  if(OS_WINDOWS AND "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "arm64")
+    set(PROJECT_ARCH "arm64")
+  elseif(CMAKE_SIZEOF_VOID_P MATCHES 8)
     set(PROJECT_ARCH "x86_64")
   else()
     set(PROJECT_ARCH "x86")
   endif()
 
-  if(OS_MACOSX)
+  if(OS_MAC)
     # PROJECT_ARCH should be specified on Mac OS X.
     message(WARNING "No PROJECT_ARCH value specified, using ${PROJECT_ARCH}")
   endif()
@@ -66,6 +69,10 @@ list(APPEND CEF_COMPILER_DEFINES
   )
 
 
+# Configure use of the sandbox.
+option(USE_SANDBOX "Enable or disable use of the sandbox." ON)
+
+
 #
 # Linux configuration.
 #
@@ -86,7 +93,9 @@ if(OS_LINUX)
     -Werror                         # Treat warnings as errors
     -Wno-missing-field-initializers # Don't warn about missing field initializers
     -Wno-unused-parameter           # Don't warn about unused parameters
-    -Wno-error=comment              # Don't complain about code in ascii art
+    -Wno-error=comment              # Don't warn about code in comments
+    -Wno-comment                    # Don't warn about code in comments
+    -Wno-deprecated-declarations    # Don't warn about using deprecated methods
     )
   list(APPEND CEF_C_COMPILER_FLAGS
     -std=c99                        # Use the C99 language standard
@@ -96,7 +105,7 @@ if(OS_LINUX)
     -fno-rtti                       # Disable real-time type information
     -fno-threadsafe-statics         # Don't generate thread-safe statics
     -fvisibility-inlines-hidden     # Give hidden visibility to inlined class member functions
-    -std=gnu++11                    # Use the C++11 language standard including GNU extensions
+    -std=c++14                      # Use the C++14 language standard
     -Wsign-compare                  # Warn about mixed signed/unsigned type comparisons
     )
   list(APPEND CEF_COMPILER_FLAGS_DEBUG
@@ -136,6 +145,13 @@ if(OS_LINUX)
   include(CheckCCompilerFlag)
   include(CheckCXXCompilerFlag)
 
+  CHECK_CXX_COMPILER_FLAG(-Wno-undefined-var-template COMPILER_SUPPORTS_NO_UNDEFINED_VAR_TEMPLATE)
+  if(COMPILER_SUPPORTS_NO_UNDEFINED_VAR_TEMPLATE)
+    list(APPEND CEF_CXX_COMPILER_FLAGS
+      -Wno-undefined-var-template   # Don't warn about potentially uninstantiated static members
+      )
+  endif()
+
   CHECK_C_COMPILER_FLAG(-Wno-unused-local-typedefs COMPILER_SUPPORTS_NO_UNUSED_LOCAL_TYPEDEFS)
   if(COMPILER_SUPPORTS_NO_UNUSED_LOCAL_TYPEDEFS)
     list(APPEND CEF_C_COMPILER_FLAGS
@@ -154,6 +170,12 @@ if(OS_LINUX)
   if(COMPILER_SUPPORTS_NO_NARROWING)
     list(APPEND CEF_CXX_COMPILER_FLAGS
       -Wno-narrowing              # Don't warn about type narrowing
+      )
+  endif()
+
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    list(APPEND CEF_CXX_COMPILER_FLAGS
+      -Wno-attributes             # The cfi-icall attribute is not supported by the GNU C++ compiler
       )
   endif()
 
@@ -198,21 +220,30 @@ if(OS_LINUX)
   set(CEF_BINARY_FILES
     chrome-sandbox
     libcef.so
-    natives_blob.bin
+    libEGL.so
+    libGLESv2.so
+    libvk_swiftshader.so
+    libvulkan.so.1
     snapshot_blob.bin
     v8_context_snapshot.bin
+    vk_swiftshader_icd.json
+    swiftshader
     )
 
   # List of CEF resource files.
   set(CEF_RESOURCE_FILES
-    cef.pak
-    cef_100_percent.pak
-    cef_200_percent.pak
-    cef_extensions.pak
-    devtools_resources.pak
+    chrome_100_percent.pak
+    chrome_200_percent.pak
+    resources.pak
     icudtl.dat
     locales
     )
+
+  if(USE_SANDBOX)
+    list(APPEND CEF_COMPILER_DEFINES
+      CEF_USE_SANDBOX   # Used by apps to test if the sandbox is enabled
+      )
+  endif()
 endif()
 
 
@@ -220,7 +251,7 @@ endif()
 # Mac OS X configuration.
 #
 
-if(OS_MACOSX)
+if(OS_MAC)
   # Platform-specific compiler/linker flags.
   # See also Xcode target properties in cef_macros.cmake.
   set(CEF_LIBTYPE SHARED)
@@ -246,7 +277,7 @@ if(OS_MACOSX)
     -fno-threadsafe-statics         # Don't generate thread-safe statics
     -fobjc-call-cxx-cdtors          # Call the constructor/destructor of C++ instance variables in ObjC objects
     -fvisibility-inlines-hidden     # Give hidden visibility to inlined class member functions
-    -std=gnu++11                    # Use the C++11 language standard including GNU extensions
+    -std=c++14                      # Use the C++14 language standard
     -Wno-narrowing                  # Don't warn about type narrowing
     -Wsign-compare                  # Warn about mixed signed/unsigned type comparisons
     )
@@ -284,7 +315,7 @@ if(OS_MACOSX)
 
   # Find the newest available base SDK.
   execute_process(COMMAND xcode-select --print-path OUTPUT_VARIABLE XCODE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
-  foreach(OS_VERSION 10.11 10.10 10.9)
+  foreach(OS_VERSION 10.15 10.14 10.13 10.12 10.11)
     set(SDK "${XCODE_PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${OS_VERSION}.sdk")
     if(NOT "${CMAKE_OSX_SYSROOT}" AND EXISTS "${SDK}" AND IS_DIRECTORY "${SDK}")
       set(CMAKE_OSX_SYSROOT ${SDK})
@@ -292,7 +323,7 @@ if(OS_MACOSX)
   endforeach()
 
   # Target SDK.
-  set(CEF_TARGET_SDK               "10.9")
+  set(CEF_TARGET_SDK               "10.11")
   list(APPEND CEF_COMPILER_FLAGS
     -mmacosx-version-min=${CEF_TARGET_SDK}
   )
@@ -301,18 +332,38 @@ if(OS_MACOSX)
   # Target architecture.
   if(PROJECT_ARCH STREQUAL "x86_64")
     set(CMAKE_OSX_ARCHITECTURES "x86_64")
+  elseif(PROJECT_ARCH STREQUAL "arm64")
+    set(CMAKE_OSX_ARCHITECTURES "arm64")
   else()
     set(CMAKE_OSX_ARCHITECTURES "i386")
   endif()
+
+  # Prevent Xcode 11 from doing automatic codesigning.
+  set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "")
 
   # CEF directory paths.
   set(CEF_BINARY_DIR          "${_CEF_ROOT}/$<CONFIGURATION>")
   set(CEF_BINARY_DIR_DEBUG    "${_CEF_ROOT}/Debug")
   set(CEF_BINARY_DIR_RELEASE  "${_CEF_ROOT}/Release")
 
-  # CEF library paths.
-  set(CEF_LIB_DEBUG   "${CEF_BINARY_DIR_DEBUG}/Chromium Embedded Framework.framework/Chromium Embedded Framework")
-  set(CEF_LIB_RELEASE "${CEF_BINARY_DIR_RELEASE}/Chromium Embedded Framework.framework/Chromium Embedded Framework")
+  if(USE_SANDBOX)
+    list(APPEND CEF_COMPILER_DEFINES
+      CEF_USE_SANDBOX   # Used by apps to test if the sandbox is enabled
+      )
+
+    # CEF sandbox library paths.
+    set(CEF_SANDBOX_LIB_DEBUG "${CEF_BINARY_DIR_DEBUG}/cef_sandbox.a")
+    set(CEF_SANDBOX_LIB_RELEASE "${CEF_BINARY_DIR_RELEASE}/cef_sandbox.a")
+  endif()
+
+  # CEF Helper app suffixes.
+  # Format is "<name suffix>:<target suffix>:<plist suffix>".
+  set(CEF_HELPER_APP_SUFFIXES
+    "::"
+    " (GPU):_gpu:.gpu"
+    " (Plugin):_plugin:.plugin"
+    " (Renderer):_renderer:.renderer"
+    )
 endif()
 
 
@@ -329,19 +380,10 @@ if(OS_WINDOWS)
     set(CMAKE_CXX_FLAGS_RELEASE "")
   endif()
 
-  # Configure use of the sandbox.
-  option(USE_SANDBOX "Enable or disable use of the sandbox." ON)
   if(USE_SANDBOX)
     # Check if the current MSVC version is compatible with the cef_sandbox.lib
-    # static library.
-    list(APPEND supported_msvc_versions
-      1900  # VS2015 and updates 1, 2, & 3
-      1910  # VS2017 version 15.1 & 15.2
-      1911  # VS2017 version 15.3 & 15.4
-      1912  # VS2017 version 15.5
-      )
-    list(FIND supported_msvc_versions ${MSVC_VERSION} _index)
-    if (${_index} EQUAL -1)
+    # static library. We require VS2015 or newer.
+    if(MSVC_VERSION LESS 1900)
       message(WARNING "CEF sandbox is not compatible with the current MSVC version (${MSVC_VERSION})")
       set(USE_SANDBOX OFF)
     endif()
@@ -349,6 +391,13 @@ if(OS_WINDOWS)
 
   # Consumers who run into LNK4099 warnings can pass /Z7 instead (see issue #385).
   set(CEF_DEBUG_INFO_FLAG "/Zi" CACHE STRING "Optional flag specifying specific /Z flag to use")
+
+  # Consumers using different runtime types may want to pass different flags
+  set(CEF_RUNTIME_LIBRARY_FLAG "/MT" CACHE STRING "Optional flag specifying which runtime to use")
+  if (CEF_RUNTIME_LIBRARY_FLAG)
+    list(APPEND CEF_COMPILER_FLAGS_DEBUG ${CEF_RUNTIME_LIBRARY_FLAG}d)
+    list(APPEND CEF_COMPILER_FLAGS_RELEASE ${CEF_RUNTIME_LIBRARY_FLAG})
+  endif()
 
   # Platform-specific compiler/linker flags.
   set(CEF_LIBTYPE STATIC)
@@ -361,6 +410,7 @@ if(OS_WINDOWS)
     /wd4100       # Ignore "unreferenced formal parameter" warning
     /wd4127       # Ignore "conditional expression is constant" warning
     /wd4244       # Ignore "conversion possible loss of data" warning
+    /wd4324       # Ignore "structure was padded due to alignment specifier" warning
     /wd4481       # Ignore "nonstandard extension used: override" warning
     /wd4512       # Ignore "assignment operator could not be generated" warning
     /wd4701       # Ignore "potentially uninitialized local variable" warning
@@ -369,12 +419,10 @@ if(OS_WINDOWS)
     ${CEF_DEBUG_INFO_FLAG}
     )
   list(APPEND CEF_COMPILER_FLAGS_DEBUG
-    /MTd          # Multithreaded debug runtime
     /RTC1         # Disable optimizations
     /Od           # Enable basic run-time checks
     )
   list(APPEND CEF_COMPILER_FLAGS_RELEASE
-    /MT           # Multithreaded release runtime
     /O2           # Optimize for maximum speed
     /Ob2          # Inline any suitable function
     /GF           # Enable string pooling
@@ -401,6 +449,7 @@ if(OS_WINDOWS)
   # Standard libraries.
   set(CEF_STANDARD_LIBS
     comctl32.lib
+    gdi32.lib
     rpcrt4.lib
     shlwapi.lib
     ws2_32.lib
@@ -419,24 +468,28 @@ if(OS_WINDOWS)
   # List of CEF binary files.
   set(CEF_BINARY_FILES
     chrome_elf.dll
-    d3dcompiler_43.dll
-    d3dcompiler_47.dll
     libcef.dll
     libEGL.dll
     libGLESv2.dll
-    natives_blob.bin
     snapshot_blob.bin
     v8_context_snapshot.bin
+    vk_swiftshader.dll
+    vk_swiftshader_icd.json
+    vulkan-1.dll
     swiftshader
     )
 
+  if(NOT PROJECT_ARCH STREQUAL "arm64")
+    list(APPEND CEF_BINARY_FILES
+      d3dcompiler_47.dll
+      )
+  endif()
+
   # List of CEF resource files.
   set(CEF_RESOURCE_FILES
-    cef.pak
-    cef_100_percent.pak
-    cef_200_percent.pak
-    cef_extensions.pak
-    devtools_resources.pak
+    chrome_100_percent.pak
+    chrome_200_percent.pak
+    resources.pak
     icudtl.dat
     locales
     )
@@ -446,12 +499,23 @@ if(OS_WINDOWS)
       PSAPI_VERSION=1   # Required by cef_sandbox.lib
       CEF_USE_SANDBOX   # Used by apps to test if the sandbox is enabled
       )
+    list(APPEND CEF_COMPILER_DEFINES_DEBUG
+      _HAS_ITERATOR_DEBUGGING=0   # Disable iterator debugging
+      )
 
     # Libraries required by cef_sandbox.lib.
     set(CEF_SANDBOX_STANDARD_LIBS
+      Advapi32.lib
       dbghelp.lib
+      Delayimp.lib
+      OleAut32.lib
+      PowrProf.lib
+      Propsys.lib
       psapi.lib
+      SetupAPI.lib
+      Shell32.lib
       version.lib
+      wbemuuid.lib
       winmm.lib
       )
 

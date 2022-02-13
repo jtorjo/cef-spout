@@ -161,7 +161,7 @@ public:
 			// notify the browser process that we want stats
 			auto message = CefProcessMessage::Create("mixer-request-stats");
 			if (message != nullptr && browser_ != nullptr) {
-				browser_->SendProcessMessage(PID_BROWSER, message);
+				//FIXME browser_->SendProcessMessage(PID_BROWSER, message);
 			}
 			return true;
 		}
@@ -513,8 +513,9 @@ public:
 	}
 
 	bool OnProcessMessageReceived(
-		CefRefPtr<CefBrowser> /*browser*/,
-		CefProcessId /*source_process*/,
+		CefRefPtr<CefBrowser> ,
+		CefRefPtr<CefFrame> frame,
+		CefProcessId ,
 		CefRefPtr<CefProcessMessage> message) override
 	{
 		auto name = message->GetName().ToString();
@@ -523,6 +524,7 @@ public:
 			// just flag that we need to deliver stats updates
 			// to the render process via a message
 			needs_stats_update_ = true;
+			// FIXME may keep pointer to the frame?
 			return true;
 		}
 		return false;
@@ -701,6 +703,7 @@ public:
 		CefWindowInfo& window_info,
 		CefRefPtr<CefClient>& client,
 		CefBrowserSettings& settings,
+		CefRefPtr<CefDictionaryValue>& extra_info,
 		bool* no_javascript_access) override
 	{
 		shared_ptr<Composition> composition;
@@ -734,7 +737,7 @@ public:
 			window_info,
 			view,
 			target_url,
-			settings,
+			settings, nullptr,
 			nullptr);
 
 		// create a new layer to handle drawing for the web popup
@@ -818,7 +821,8 @@ public:
 
 		args->SetDictionary(0, dict);
 
-		browser->SendProcessMessage(PID_RENDERER, message);
+		// I think I can pass a CefFrame
+		// FIXME browser->SendProcessMessage(PID_RENDERER, message);
 	}
 
 	void resize(int width, int height)
@@ -863,10 +867,10 @@ public:
 			CefWindowInfo windowInfo;
 			windowInfo.SetAsPopup(nullptr, "Developer Tools");
 			windowInfo.style = WS_VISIBLE | WS_OVERLAPPEDWINDOW;
-			windowInfo.x = 0;
-			windowInfo.y = 0;
-			windowInfo.width = 640;
-			windowInfo.height = 480;
+			windowInfo.bounds.x = 0;
+			windowInfo.bounds.y = 0;
+			windowInfo.bounds.width = 640;
+			windowInfo.bounds.height = 480;
 			browser->GetHost()->ShowDevTools(windowInfo, new DevToolsClient(), CefBrowserSettings(), { 0, 0 });
 		}
 	}
@@ -1252,7 +1256,7 @@ shared_ptr<Layer> create_web_layer(
 		window_info,
 		view,
 		url,
-		settings,
+		settings, nullptr,
 		nullptr);
 
 	return create_web_layer(device, want_input, view);
