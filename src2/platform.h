@@ -18,3 +18,4 @@
 #include <ShlObj.h>
 #include <assert.h>
 
+#include <vector>

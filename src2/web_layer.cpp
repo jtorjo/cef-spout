@@ -1,11 +1,7 @@
-#include "composition.h"
-
 #include <include/cef_app.h>
 #include <include/cef_browser.h>
 #include <include/cef_client.h>
 #include <include/cef_version.h>
-#include "../lib/Spout2/SpoutSDK/Source/Spout.h"
-#include "../lib/Spout2/SpoutSDK/Source/SpoutSenderNames.h"
 
 #include <mutex>
 #include <condition_variable>
@@ -66,15 +62,15 @@ class WebView;
 class FrameBuffer;
 
 extern bool show_devtools_;
-spoutSenderNames * sender;
-spoutGLDXinterop * interop;
-spoutDirectX * sdx;
+// FIXME spoutSenderNames * sender;
+// FIXME spoutGLDXinterop * interop;
+// FIXME spoutDirectX * sdx;
 const char* globName = "CEF";
 int fbCount = 0;
 
-DXGI_FORMAT texFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+// FIXME DXGI_FORMAT texFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-vector<ID3D11Texture2D *> activeTextures;
+// FIXME vector<ID3D11Texture2D *> activeTextures;
 vector<HANDLE> activeHandles;
 vector<string> activeNames;
 int numActiveSenders;
@@ -86,29 +82,12 @@ private:
 };
 
 
-//
-// internal factory method so popups (window.open()) 
-// can create layers on the fly
-//
-shared_ptr<Layer> create_web_layer(
-	std::shared_ptr<d3d11::Device> const& device,
-	bool want_input,
-	CefRefPtr<WebView> const& view);
-
-//
-// internal factory method so popups (dropdowns, PET_POPUP) 
-// can create simple layers on the fly
-//
-shared_ptr<Layer> create_popup_layer(
-	shared_ptr<d3d11::Device> const& device,
-	shared_ptr<FrameBuffer> const& buffer);
 
 //
 // V8 handler for our 'mixer' object available to javascript
 // running in a page within this application
 //
-class MixerHandler :
-	public CefV8Accessor
+class MixerHandler : public CefV8Accessor
 {
 public:
 	MixerHandler(
@@ -184,8 +163,8 @@ class WebApp : public CefApp,
 {
 public:
 	WebApp() {
-		sender = new spoutSenderNames;
-		sender->SetMaxSenders(10);
+		// FIXME sender = new spoutSenderNames;
+		// FIXME sender->SetMaxSenders(10);
 	}
 
 	CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override {
@@ -293,26 +272,20 @@ private:
 class FrameBuffer
 {
 public:
-	FrameBuffer(shared_ptr<d3d11::Device> const& device) : device_(device), dirty_(false)
+	FrameBuffer() : dirty_(false)
 	{
 		spoutID.append(to_string(fbCount));
 		fbCount++;
-		sender->CreateSender(spoutID.c_str(), window_width(), window_height(), NULL, texFormat);
+		// FIXME sender->CreateSender(spoutID.c_str(), window_width(), window_height(), NULL, texFormat);
 	}
 
 	string spoutID = "CEF_";
 
 	int32_t width() {
-		if (shared_buffer_) {
-			return shared_buffer_->width();
-		}
 		return 0;
 	}
 
 	int32_t height() {
-		if (shared_buffer_) {
-			return shared_buffer_->height();
-		}
 		return 0;
 	}
 
@@ -321,11 +294,6 @@ public:
 		uint32_t stride = width * 4;
 		size_t cb = stride * height;
 
-		if (!shared_buffer_ || (shared_buffer_->width() != width) || (shared_buffer_->height() != height))
-		{
-			shared_buffer_ = device_->create_texture(width, height, DXGI_FORMAT_B8G8R8A8_UNORM, nullptr, 0);
-			sw_buffer_ = shared_ptr<uint8_t>((uint8_t*)malloc(cb), free);
-		}
 
 		if (sw_buffer_ && buffer)
 		{
@@ -334,9 +302,6 @@ public:
 		}
 
 		dirty_ = true;
-
-		// quick test
-		on_gpu_paint( shared_buffer_->share_handle());
 	}
 
 	//
@@ -348,59 +313,15 @@ public:
 
 		lock_guard<mutex> guard(lock_);
 
-		// did the shared texture change?
-		if (shared_buffer_)
-		{
-			if (shared_handle != shared_buffer_->share_handle()) {
-				shared_buffer_.reset();
-			}
-		}
-
-		// open the shared texture
-		if (!shared_buffer_)
-		{
-			shared_buffer_ = device_->open_shared_texture((void*)shared_handle);
-			if (!shared_buffer_) {
-				log_message("could not open shared texture!");
-			}
-		}
-
-		dirty_ = true;
-		//log_message("html: OnAcceleratedPaint (%dx%d)", width(), height());
-		sender->UpdateSender(spoutID.c_str(), width(), height(), (void*)shared_handle, texFormat);
 	}
 
-	//
-	// this method returns what should be considered the front buffer
-	// we're simply using the shared texture directly 
-	//
-	// ... this method could be expanded on to handle 
-	// synchronization through a keyed mutex
-	// 
-	shared_ptr<d3d11::Texture2D> swap(shared_ptr<d3d11::Context> const& ctx)
-	{
-		lock_guard<mutex> guard(lock_);
-
-		// using software buffer? just copy to texture
-		if (sw_buffer_ && shared_buffer_ && dirty_)
-		{
-			d3d11::ScopedBinder<d3d11::Texture2D> binder(ctx, shared_buffer_);
-			shared_buffer_->copy_from(
-				sw_buffer_.get(),
-				shared_buffer_->width() * 4,
-				shared_buffer_->height());
-		}
-
-		dirty_ = false;
-		return shared_buffer_;
-	}
 
 private:
 
 	mutex lock_;
 	atomic_bool abort_;
-	shared_ptr<d3d11::Texture2D> shared_buffer_;
-	std::shared_ptr<d3d11::Device> const device_;
+//	shared_ptr<d3d11::Texture2D> shared_buffer_;
+	//std::shared_ptr<d3d11::Device> const device_;
 	shared_ptr<uint8_t> sw_buffer_;
 	bool dirty_;
 };
@@ -439,7 +360,7 @@ class WebView : public CefClient,
 public:
 	WebView(
 		string const& name,
-		shared_ptr<d3d11::Device> const& device,
+		// FIXME shared_ptr<d3d11::Device> const& device,
 		int width,
 		int height,
 		bool use_shared_textures,
@@ -447,12 +368,12 @@ public:
 		: name_(name)
 		, width_(width)
 		, height_(height)
-		, view_buffer_(make_shared<FrameBuffer>(device))
-		, popup_buffer_(make_shared<FrameBuffer>(device))
+		// FIXME , view_buffer_(make_shared<FrameBuffer>(device))
+		// FIXME , popup_buffer_(make_shared<FrameBuffer>(device))
 		, needs_stats_update_(false)
 		, use_shared_textures_(use_shared_textures)
 		, send_begin_frame_(send_begin_Frame)
-		, device_(device)
+		// FIXME , device_(device)
 	{
 		frame_ = 0;
 		fps_start_ = 0ull;
@@ -467,14 +388,6 @@ public:
 		return use_shared_textures_;
 	}
 
-	//
-	// we'll use the composition to handle new popup layer
-	//
-	void attach(shared_ptr<Composition> const& comp)
-	{
-		lock_guard<mutex> guard(lock_);
-		composition_ = comp;
-	}
 
 	void close()
 	{
@@ -493,7 +406,7 @@ public:
 		{
 			string id = "CEF_";
 			id.append(to_string(i));
-			sender->ReleaseSenderName(id.c_str());
+			// FIXME sender->ReleaseSenderName(id.c_str());
 		}
 
 		log_message("html view is closed\n");
@@ -641,54 +554,11 @@ public:
 	{
 		log_message("%s popup\n", show ? "show" : "hide");
 
-		lock_guard<mutex> guard(lock_);
-		auto const composition = composition_.lock();
-		if (composition)
-		{
-			if (show)
-			{
-				// remove existing
-				composition->remove_layer(popup_layer_);
-
-				// create new layer
-				popup_layer_ = create_popup_layer(device_, popup_buffer_);
-				composition->add_layer(popup_layer_);
-			}
-			else {
-				composition->remove_layer(popup_layer_);
-			}
-		}
 	}
 
 	void OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& rect) override
 	{
-		log_message("size popup - %d,%d  %dx%d\n", rect.x, rect.y, rect.width, rect.height);
-
-		decltype(popup_layer_) layer;
-
-		{
-			lock_guard<mutex> guard(lock_);
-			layer = popup_layer_;
-		}
-
-		if (layer)
-		{
-			auto const composition = layer->composition();
-			if (composition)
-			{
-				auto const outer_width = composition->width();
-				auto const outer_height = composition->height();
-				if (outer_width > 0 && outer_height > 0)
-				{
-					auto const x = rect.x / float(outer_width);
-					auto const y = rect.y / float(outer_height);
-					auto const w = rect.width / float(outer_width);
-					auto const h = rect.height / float(outer_height);
-					layer->move(x, y, w, h);
-				}
-			}
-		}
-	}
+		log_message("size popup - %d,%d  %dx%d\n", rect.x, rect.y, rect.width, rect.height);	}
 
 	bool OnBeforePopup(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
@@ -703,17 +573,6 @@ public:
 		CefRefPtr<CefDictionaryValue>& extra_info,
 		bool* no_javascript_access) override
 	{
-		shared_ptr<Composition> composition;
-		{
-			lock_guard<mutex> guard(lock_);
-			composition = composition_.lock();
-		}
-
-		// we need a composition to add new popup layers to
-		if (!composition) {
-			return true; // prevent popup
-		}
-
 		window_info.SetAsWindowless(nullptr);
 		window_info.shared_texture_enabled = use_shared_textures();
 		window_info.external_begin_frame_enabled = send_begin_frame_;
@@ -724,7 +583,7 @@ public:
 
 		CefRefPtr<WebView> view(new WebView(
 			target_frame_name,
-			device_,
+			// FIXME device_,
 			width,
 			height,
 			use_shared_textures(),
@@ -737,26 +596,6 @@ public:
 			settings, nullptr,
 			nullptr);
 
-		// create a new layer to handle drawing for the web popup
-		auto const layer = create_web_layer(device_, true, view);
-		if (!layer) {
-			return true; // prevent popup
-		}
-
-		composition->add_layer(layer);
-
-		// center the popup within the composition
-		auto const outer_width = composition->width();
-		auto const outer_height = composition->height();
-		if (outer_width > 0 && outer_height > 0)
-		{
-			// convert popup dimensions to normalized units
-			// for composition space
-			auto const sx = width / float(outer_width);
-			auto const sy = height / float(outer_height);
-			layer->move(0.5f - (sx / 2), 0.5f - (sy / 2), sx, sy);
-		}
-
 		return false;
 	}
 
@@ -767,60 +606,16 @@ public:
 		dump_source(frame);
 	}
 
-	shared_ptr<d3d11::Texture2D> texture(shared_ptr<d3d11::Context> const& ctx)
-	{
-		if (view_buffer_) {
-			return view_buffer_->swap(ctx);
-		}
-		return nullptr;
-	}
 
 	void tick(double t)
 	{
-		shared_ptr<Composition> composition;
 		auto const browser = safe_browser();
-		{
-			lock_guard<mutex> guard(lock_);
-			composition = composition_.lock();
-		}
-
-		// the javascript might be interested in our 
-		// rendering statistics (e.g. HUD) ...
-		if (needs_stats_update_) {
-			update_stats(browser, composition);
-		}
-
 		// optionally issue a BeginFrame request
 		if (send_begin_frame_ && browser) {
 			browser->GetHost()->SendExternalBeginFrame();
 		}
 	}
 
-	void update_stats(CefRefPtr<CefBrowser> const& browser,
-		shared_ptr<Composition> const& composition)
-	{
-		if (!browser || !composition) {
-			return;
-		}
-
-		auto message = CefProcessMessage::Create("mixer-update-stats");
-		auto args = message->GetArgumentList();
-
-		// create a dictionary to hold all of individual statistic values
-		// it will get converted by the Render process into a V8 Object
-		// that gets passed to the script running in the page
-		auto dict = CefDictionaryValue::Create();
-		dict->SetInt("width", composition->width());
-		dict->SetInt("height", composition->height());
-		dict->SetDouble("fps", composition->fps());
-		dict->SetDouble("time", composition->time());
-		dict->SetBool("vsync", composition->is_vsync());
-
-		args->SetDictionary(0, dict);
-
-		// I think I can pass a CefFrame
-		// FIXME browser->SendProcessMessage(PID_RENDERER, message);
-	}
 
 	void resize(int width, int height)
 	{
@@ -872,27 +667,6 @@ public:
 		}
 	}
 
-	void mouse_click(MouseButton button, bool up, int32_t x, int32_t y)
-	{
-		auto const browser = safe_browser();
-		if (browser)
-		{
-			CefMouseEvent mouse;
-			mouse.x = x;
-			mouse.y = y;
-			mouse.modifiers = 0;
-
-			cef_mouse_button_type_t ctype;
-			switch (button)
-			{
-			case MouseButton::Middle: ctype = MBT_MIDDLE; break;
-			case MouseButton::Right: ctype = MBT_RIGHT; break;
-			case MouseButton::Left: ctype = MBT_LEFT;
-			default:break;
-			}
-			browser->GetHost()->SendMouseClickEvent(mouse, ctype, up, 1);
-		}
-	}
 
 	void mouse_move(bool leave, int32_t x, int32_t y)
 	{
@@ -937,135 +711,7 @@ private:
 	bool use_shared_textures_;
 	bool send_begin_frame_;
 
-	shared_ptr<Layer> popup_layer_;
-	weak_ptr<Composition> composition_;
-	shared_ptr<d3d11::Device> const device_;
-};
-
-
-class WebLayer : public Layer
-{
-public:
-	WebLayer(
-		std::shared_ptr<d3d11::Device> const& device,
-		bool want_input,
-		CefRefPtr<WebView> const& view)
-		: Layer(device, want_input, view->use_shared_textures())
-		, view_(view) {
-	}
-
-	~WebLayer() {
-		if (view_) {
-			view_->close();
-		}
-	}
-
-	//
-	// forward composition reference to our view
-	// it may use it for popup layers
-	//
-	void attach(std::shared_ptr<Composition> const& comp) override
-	{
-		Layer::attach(comp);
-
-		// let our view know about the composition
-		if (view_) {
-			view_->attach(comp);
-		}
-	}
-
-	void tick(double t) override
-	{
-		auto const comp = composition();
-		if (comp)
-		{
-			// The bounding box for this layer is in normalized coordinates,
-			// the html view needs to know pixel size...so we convert from normalized
-			// to pixels based on the composition dimensions (which are in pixels).
-			//
-			// Note: it is safe to call resize() on the view repeatedly since
-			// it will ignore the call if the requested size is the same
-
-			auto const rect = bounds();
-			auto const width = static_cast<int>(rect.width * comp->width());
-			auto const height = static_cast<int>(rect.height * comp->height());
-
-			if (view_)
-			{
-				// from Masako Toda
-				if (show_devtools_)
-				{
-					view_->show_devtools();
-					show_devtools_ = false;
-				}
-
-				view_->resize(width, height);
-				view_->tick(t);
-			}
-		}
-
-		Layer::tick(t);
-	}
-
-	void render(shared_ptr<d3d11::Context> const& ctx) override
-	{
-		// simply use the base class method to draw our texture
-		if (view_) {
-			render_texture(ctx, view_->texture(ctx));
-		}
-	}
-
-	void mouse_click(MouseButton button, bool up, int32_t x, int32_t y) override
-	{
-		if (view_) {
-			view_->mouse_click(button, up, x, y);
-		}
-	}
-
-	void mouse_move(bool leave, int32_t x, int32_t y) override
-	{
-		if (view_) {
-			view_->mouse_move(leave, x, y);
-		}
-	}
-
-	void refresh() override
-	{
-		if (view_) {
-			view_->refresh();
-		}
-	}
-
-
-
-private:
-
-	CefRefPtr<WebView> const view_;
-};
-
-//
-// a simple layer that will render out PET_POPUP for a
-// corresponding view
-//
-class PopupLayer : public Layer
-{
-public:
-	PopupLayer(
-		shared_ptr<d3d11::Device> const& device,
-		shared_ptr<FrameBuffer> const& buffer)
-		: Layer(device, false, true)
-		, frame_buffer_(buffer) {
-	}
-
-	void render(shared_ptr<d3d11::Context> const& ctx) override
-	{
-		if (frame_buffer_) {
-			render_texture(ctx, frame_buffer_->swap(ctx));
-		}
-	}
-
-private:
-	shared_ptr<FrameBuffer> const frame_buffer_;
+	// FIXME shared_ptr<d3d11::Device> const device_;
 };
 
 
@@ -1180,94 +826,7 @@ void CefModule::message_loop()
 	log_message("cef is shutdown\n");
 }
 
-//
-// internal factory method so popups can create layers on the fly
-//
-shared_ptr<Layer> create_web_layer(
-	std::shared_ptr<d3d11::Device> const& device,
-	bool want_input,
-	CefRefPtr<WebView> const& view)
-{
-	if (device && view) {
-		return make_shared<WebLayer>(device, want_input, view);
-	}
-	return nullptr;
-}
 
-//
-// use CEF to load and render a web page within a layer
-//
-shared_ptr<Layer> create_web_layer(
-	std::shared_ptr<d3d11::Device> const& device,
-	string const& url,
-	int width,
-	int height,
-	bool want_input,
-	bool view_source)
-{
-	CefWindowInfo window_info;
-	window_info.SetAsWindowless(nullptr);
-
-	// we want to use OnAcceleratedPaint
-	window_info.shared_texture_enabled = true;
-
-	// we are going to issue calls to SendExternalBeginFrame
-	// and CEF will not use its internal BeginFrameTimer in this case
-	window_info.external_begin_frame_enabled = true;
-
-	CefBrowserSettings settings;
-
-	// Set the maximum rate that the HTML content will render at
-	//
-	// NOTE: this value is NOT capped to 60 by CEF when using shared textures and
-	// it is completely ignored when using SendExternalBeginFrame
-	//
-	// For testing, this application uses 120Hz to show that the 60Hz limit is ignored
-	// (set window_info.external_begin_frame_enabled above to false to test)
-	//
-	settings.windowless_frame_rate = 120;
-
-	string name;
-
-	// generate a name for the view based on the url - with the view
-	// source option, we'll dump the page DOM source to a temporary file
-	//
-	// under <USER>\AppData\LocalData\cefmixer
-	//
-	if (view_source)
-	{
-		name = url;
-		std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-		string remove("<>:\"/\\|?*");
-		for (auto const& c : remove) {
-			name.erase(std::remove(name.begin(), name.end(), c), name.end());
-		}
-	}
-
-	CefRefPtr<WebView> view(new WebView(
-		name, device, width, height,
-		window_info.shared_texture_enabled,
-		window_info.external_begin_frame_enabled));
-
-	CefBrowserHost::CreateBrowser(
-		window_info,
-		view,
-		url,
-		settings, nullptr,
-		nullptr);
-
-	return create_web_layer(device, want_input, view);
-}
-
-shared_ptr<Layer> create_popup_layer(
-	shared_ptr<d3d11::Device> const& device,
-	shared_ptr<FrameBuffer> const& buffer)
-{
-	if (device && buffer) {
-		return make_shared<PopupLayer>(device, buffer);
-	}
-	return nullptr;
-}
 
 //
 // public method to setup CEF for this application

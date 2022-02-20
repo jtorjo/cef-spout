@@ -1,9 +1,6 @@
 
 set(ALL_SRCS
 	app.rc
-	composition.h
-	composition.cpp	
-	image_layer.cpp
 	web_layer.cpp
 	main.cpp
 	platform.h

@@ -2,7 +2,6 @@
 #include "util.h"
 
 #include "d3d11.h"
-#include "composition.h"
 
 #include "resource.h"
 
@@ -31,9 +30,6 @@ class Window
 private:
 	HINSTANCE const instance_;
 	HWND hwnd_;
-	std::shared_ptr<d3d11::Device> const device_;
-	std::shared_ptr<d3d11::SwapChain> swapchain_;
-	std::shared_ptr<Composition> const composition_;
 	int sync_interval_;
 	bool resize_;
 	std::string const json_;
@@ -42,12 +38,8 @@ public:
 
 	Window(
 		HINSTANCE instance,
-		std::shared_ptr<d3d11::Device> const& device,
-		std::shared_ptr<Composition> const& comp,
 		std::string const& json)
 		: instance_(instance)
-		, device_(device)
-		, composition_(comp)
 		, sync_interval_(1)
 		, resize_(false)
 		, json_(json)
@@ -58,20 +50,8 @@ public:
 		return hwnd_;
 	}
 
-	static Window* open(
-		HINSTANCE instance, std::string const& json, int32_t width, int32_t height)
+	static Window* open(HINSTANCE instance, std::string const& json, int32_t width, int32_t height)
 	{
-		// create a D3D11 rendering device
-		auto device = d3d11::create_device();
-		if (!device) {
-			return nullptr;
-		}
-
-		// create a composition to represent our 2D-scene
-		auto const comp = create_composition(device, json);
-		if (!comp) {
-			return nullptr;
-		}
 
 		LPCWSTR class_name = L"_main_window_";
 
@@ -96,12 +76,12 @@ public:
 			}
 		}
 
-		auto const self = new Window(instance, device, comp, json);
+		auto const self = new Window(instance, json);
 
 		std::string title("CEF OSR Mixer - ");
-		title.append(cef_version());
+		//title.append(cef_version());
 		title.append(" - [gpu: ");
-		title.append(device->adapter_name());
+		//title.append(device->adapter_name());
 		title.append("]");
 
 		auto const hwnd = CreateWindow(class_name,
@@ -143,42 +123,11 @@ public:
 	void tick(double t)
 	{
 		// update composition + layers based on time
-		composition_->tick(t);
+		// FIXME composition_->tick(t);
 	}
 
 	void render()
 	{
-		auto ctx = device_->immedidate_context();
-		if (!ctx || !swapchain_) {
-			return;
-		}
-
-		swapchain_->bind(ctx);
-
-		// is there a request to resize ... if so, resize
-		// both the swapchain and the composition
-		if (resize_)
-		{
-			RECT rc;
-			GetClientRect(hwnd(), &rc);
-			auto const width = rc.right - rc.left;
-			auto const height = rc.bottom - rc.top;
-			if (width && height)
-			{
-				resize_ = false;
-				composition_->resize(sync_interval_ != 0, width, height);
-				swapchain_->resize(width, height);
-			}
-		}
-
-		// clear the render-target
-		swapchain_->clear(0.0f, 0.0f, 1.0f, 1.0f);
-
-		// render our scene
-		composition_->render(ctx);
-
-		// present to window
-		swapchain_->present(sync_interval_);
 	}
 
 private:
@@ -254,24 +203,21 @@ private:
 
 		case WM_KEYDOWN:
 			if (wp == VK_F5) {
-				if (composition_) {
-					composition_->refresh();
-				}
 			}
 		case WM_LBUTTONDOWN:
-			on_mouse_click(MouseButton::Left, false, lp);
+// FIXME 			on_mouse_click(MouseButton::Left, false, lp);
 			break;
 		case WM_LBUTTONUP:
-			on_mouse_click(MouseButton::Left, true, lp);
+			// FIXME on_mouse_click(MouseButton::Left, true, lp);
 			break;
 		case WM_RBUTTONDOWN:
-			on_mouse_click(MouseButton::Right, false, lp);
+			// FIXME on_mouse_click(MouseButton::Right, false, lp);
 			break;
 		case WM_RBUTTONUP:
-			on_mouse_click(MouseButton::Right, true, lp);
+			// FIXME on_mouse_click(MouseButton::Right, true, lp);
 			break;
 
-		case WM_MOUSEMOVE: on_mouse_move(false, lp);
+		case WM_MOUSEMOVE: //on_mouse_move(false, lp);
 			break;
 
 		case WM_SIZE:
@@ -292,7 +238,7 @@ private:
 	void on_create()
 	{
 		// create a D3D11 swapchain for the window
-		swapchain_ = device_->create_swapchain(hwnd());
+		// FIXME swapchain_ = device_->create_swapchain(hwnd());
 	}
 
 	void on_new_window()
@@ -300,30 +246,6 @@ private:
 		RECT rc;
 		GetClientRect(hwnd(), &rc);
 		Window::open(instance_, json_, rc.right - rc.left, rc.bottom - rc.top);
-	}
-
-	//
-	// forward a Windows WM_XXX mouse Up/Down notification to the layers
-	//
-	void on_mouse_click(MouseButton button, bool up, LPARAM lp)
-	{
-		auto const x = ((int)(short)LOWORD(lp));
-		auto const y = ((int)(short)HIWORD(lp));
-		if (composition_) {
-			composition_->mouse_click(button, up, x, y);
-		}
-	}
-
-	//
-	// forward a Windows WM_XXX mouse move notification to the layers
-	//
-	void on_mouse_move(bool leave, LPARAM lp)
-	{
-		auto const x = ((int)(short)LOWORD(lp));
-		auto const y = ((int)(short)HIWORD(lp));
-		if (composition_) {
-			composition_->mouse_move(leave, x, y);
-		}
 	}
 
 };
@@ -340,6 +262,11 @@ public:
 	}
 	~ComInitializer() { CoUninitialize(); }
 };
+
+int cef_initialize(HINSTANCE instance);
+void cef_uninitialize();
+
+
 
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR, int)
 {

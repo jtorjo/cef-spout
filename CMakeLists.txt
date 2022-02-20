@@ -208,8 +208,10 @@ set(
 
 
 # Spout-related configuration
-file(GLOB spout_src_files "lib/Spout2/SpoutSDK/Source/*.cpp")
-file(GLOB spout_inc_files "lib/Spout2/SpoutSDK/Source/*.h")
+file(GLOB spout_src_files "lib_spout/SpoutGL/*.cpp")
+file(GLOB spout_inc_files "lib_spout/SpoutGL/*.h")
+file(GLOB spout_src_files_dx "lib_spout/SpoutDirectX/SpoutDX/*.cpp")
+file(GLOB spout_src_files_dx "lib_spout/SpoutDirectX/SpoutDX/*.h*")
 
 #
 # Define CEF-based targets.
@@ -220,7 +222,7 @@ file(GLOB spout_inc_files "lib/Spout2/SpoutSDK/Source/*.h")
 # directory.
 add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
 
-add_subdirectory(src)
+add_subdirectory(src2)
 
 # Display configuration settings.
 PRINT_CEF_CONFIG()
