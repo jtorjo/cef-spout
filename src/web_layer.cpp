@@ -321,13 +321,9 @@ public:
 		uint32_t stride = width * 4;
 		size_t cb = stride * height;
 
-		if (!shared_buffer_ ||
-			(shared_buffer_->width() != width) ||
-			(shared_buffer_->height() != height))
+		if (!shared_buffer_ || (shared_buffer_->width() != width) || (shared_buffer_->height() != height))
 		{
-			shared_buffer_ = device_->create_texture(
-				width, height, DXGI_FORMAT_B8G8R8A8_UNORM, nullptr, 0);
-
+			shared_buffer_ = device_->create_texture(width, height, DXGI_FORMAT_B8G8R8A8_UNORM, nullptr, 0);
 			sw_buffer_ = shared_ptr<uint8_t>((uint8_t*)malloc(cb), free);
 		}
 
