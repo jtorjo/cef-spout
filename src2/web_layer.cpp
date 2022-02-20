@@ -298,6 +298,8 @@ public:
 		}
 
 		dirty_ = true;
+		if (sender)
+			sender->SendImage((unsigned char*)buffer, width, height);
 	}
 
 	//
@@ -307,8 +309,9 @@ public:
 	{
 		// Note: we're not handling keyed mutexes yet
 
-		lock_guard<mutex> guard(lock_);
 
+		if (sender)
+			sender->SendImage((unsigned char*)shared_handle, window_width(), window_height());
 	}
 
 
