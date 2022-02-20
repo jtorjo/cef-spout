@@ -300,7 +300,7 @@ public:
 		sender->CreateSender(spoutID.c_str(), window_width(), window_height(), NULL, texFormat);
 	}
 
-	string spoutID = "CEF_spout_test";
+	string spoutID = "CEF_";
 
 	int32_t width() {
 		if (shared_buffer_) {
@@ -534,8 +534,6 @@ public:
 		int width,
 		int height) override
 	{
-		// this application doesn't support software rasterizing
-
 		if (type == PET_VIEW)
 		{
 			frame_++;
