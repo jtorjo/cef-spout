@@ -7,6 +7,8 @@ set(ALL_SRCS
 	resource.h
 	util.cpp
 	util.h
+	SpoutDX.h
+	SpoutDX.cpp
 )
 	
 # Logical target used to link the libcef library.

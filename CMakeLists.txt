@@ -210,8 +210,6 @@ set(
 # Spout-related configuration
 file(GLOB spout_src_files "lib_spout/SpoutGL/*.cpp")
 file(GLOB spout_inc_files "lib_spout/SpoutGL/*.h")
-file(GLOB spout_src_files_dx "lib_spout/SpoutDirectX/SpoutDX/*.cpp")
-file(GLOB spout_src_files_dx "lib_spout/SpoutDirectX/SpoutDX/*.h*")
 
 #
 # Define CEF-based targets.

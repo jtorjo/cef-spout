@@ -8,6 +8,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "../lib_spout/SpoutDirectX/SpoutDX/SpoutDX.h"
+
 //
 // if we're running on a system with hybrid graphics ... 
 // try to force the selection of the high-performance gpu
@@ -28,6 +30,7 @@ std::vector<Window*> windows_;
 class Window
 {
 private:
+	spoutDX sender;  
 	HINSTANCE const instance_;
 	HWND hwnd_;
 	int sync_interval_;
@@ -44,6 +47,12 @@ public:
 		, resize_(false)
 		, json_(json)
 	{
+	}
+	~Window() {
+		if (sender.IsConnected()) {
+			sender.ReleaseSender();
+			sender.CloseDirectX11();
+		}
 	}
 
 	HWND hwnd() const {
@@ -77,12 +86,18 @@ public:
 		}
 
 		auto const self = new Window(instance, json);
+		if (!self->sender.OpenDirectX11())
+			return nullptr;
 
 		std::string title("CEF OSR Mixer - ");
 		//title.append(cef_version());
 		title.append(" - [gpu: ");
-		//title.append(device->adapter_name());
+		char adapter_name[256];
+		self->sender.GetAdapterName(0, adapter_name, 256);
+		title.append(adapter_name);
 		title.append("]");
+
+		self->sender.SetSenderName("Simple Windows sender");
 
 		auto const hwnd = CreateWindow(class_name,
 			to_utf16(title).c_str(),
