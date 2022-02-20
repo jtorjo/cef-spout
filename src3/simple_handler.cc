@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefsimple/simple_handler.h"
+#include "simple_handler.h"
 
 #include <sstream>
 #include <string>
@@ -15,9 +15,14 @@
 #include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_helpers.h"
 
+#include "SpoutDX.h"
+
 namespace {
 
 SimpleHandler* g_instance = nullptr;
+
+// FIXME simple for now
+spoutDX * sender;
 
 // Returns a data: URI with the specified contents.
 std::string GetDataURI(const std::string& data, const std::string& mime_type) {
@@ -32,6 +37,12 @@ SimpleHandler::SimpleHandler(bool use_views)
     : use_views_(use_views), is_closing_(false) {
   DCHECK(!g_instance);
   g_instance = this;
+
+   sender = new spoutDX();
+	auto ok = sender->OpenDirectX11();
+	sender->SetMaxSenders(10);
+
+	sender->SetSenderName("Simple Windows sender");
 }
 
 SimpleHandler::~SimpleHandler() {
@@ -43,24 +54,6 @@ SimpleHandler* SimpleHandler::GetInstance() {
   return g_instance;
 }
 
-void SimpleHandler::OnTitleChange(CefRefPtr<CefBrowser> browser,
-                                  const CefString& title) {
-  CEF_REQUIRE_UI_THREAD();
-
-  if (use_views_) {
-    // Set the title of the window using the Views framework.
-    CefRefPtr<CefBrowserView> browser_view =
-        CefBrowserView::GetForBrowser(browser);
-    if (browser_view) {
-      CefRefPtr<CefWindow> window = browser_view->GetWindow();
-      if (window)
-        window->SetTitle(title);
-    }
-  } else if (!IsChromeRuntimeEnabled()) {
-    // Set the title of the window using platform APIs.
-    PlatformTitleChange(browser, title);
-  }
-}
 
 void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
@@ -153,4 +146,18 @@ bool SimpleHandler::IsChromeRuntimeEnabled() {
     value = command_line->HasSwitch("enable-chrome-runtime") ? 1 : 0;
   }
   return value == 1;
+}
+
+
+void SimpleHandler::OnPaint(
+	CefRefPtr<CefBrowser> /*browser*/,
+	CefRenderHandler::PaintElementType type,
+	const CefRenderHandler::RectList& dirtyRects,
+	const void* buffer,
+	int width,
+    int height)  {
+
+
+	if (sender)
+		sender->SendImage((unsigned char*)buffer, width, height);
 }

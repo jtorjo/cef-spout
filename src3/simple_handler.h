@@ -10,7 +10,7 @@
 #include <list>
 
 class SimpleHandler : public CefClient,
-                      public CefDisplayHandler,
+                      public CefRenderHandler,
                       public CefLifeSpanHandler,
                       public CefLoadHandler {
  public:
@@ -21,17 +21,14 @@ class SimpleHandler : public CefClient,
   static SimpleHandler* GetInstance();
 
   // CefClient methods:
-  virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override {
-    return this;
-  }
+	CefRefPtr<CefRenderHandler> GetRenderHandler() override {
+		return this;
+	}
   virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override {
     return this;
   }
   virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
 
-  // CefDisplayHandler methods:
-  virtual void OnTitleChange(CefRefPtr<CefBrowser> browser,
-                             const CefString& title) override;
 
   // CefLifeSpanHandler methods:
   virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
@@ -45,6 +42,12 @@ class SimpleHandler : public CefClient,
                            const CefString& errorText,
                            const CefString& failedUrl) override;
 
+	void GetViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect) override
+	{
+		rect.Set(0, 0, 1280, 720);
+	}
+
+
   // Request that all existing browser windows close.
   void CloseAllBrowsers(bool force_close);
 
@@ -52,6 +55,15 @@ class SimpleHandler : public CefClient,
 
   // Returns true if the Chrome runtime is enabled.
   static bool IsChromeRuntimeEnabled();
+
+
+  void OnPaint(
+		CefRefPtr<CefBrowser> /*browser*/,
+		 CefRenderHandler::PaintElementType type,
+		const CefRenderHandler::RectList& dirtyRects,
+		const void* buffer,
+		int width,
+		int height) override;
 
  private:
   // Platform-specific implementation.

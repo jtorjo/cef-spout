@@ -2,5 +2,5 @@ rmdir build /Q /S
 pause
 mkdir build
 cd build
-cmake ..
+cmake -D USE_SANDBOX=false ..
 pause
