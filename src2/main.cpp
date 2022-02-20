@@ -26,6 +26,17 @@ class Window;
 bool show_devtools_ = false;
 std::vector<Window*> windows_;
 
+// FIXME simple for now
+extern spoutDX * sender;
+
+void create_web_layer(
+	std::string const& url,
+	int width,
+	int height,
+	bool want_input,
+	bool view_source);
+void view_tick() ;
+
 
 class Window
 {
@@ -88,6 +99,11 @@ public:
 		auto const self = new Window(instance, json);
 		if (!self->sender.OpenDirectX11())
 			return nullptr;
+		::sender = &(self->sender);
+		self->sender.SetMaxSenders(10);
+
+		auto url = "file://D:/john/cef_browser/cef-test/b-cef-test/index.html";
+		create_web_layer(url, window_width(), window_height(), false, false);
 
 		std::string title("CEF OSR Mixer - ");
 		//title.append(cef_version());
@@ -471,12 +487,15 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR, int)
 		}
 		else
 		{
+			/* 
 			auto const t = (time_now() - start_time) / 1000000.0;
 			for (auto const& w : windows_)
 			{
 				w->tick(t);
 				w->render();
 			}
+			*/
+			view_tick();
 		}
 	}
 

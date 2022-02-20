@@ -18,8 +18,15 @@
 #include "util.h"
 #include <chrono>
 
+#include "SpoutDX.h"
 
 using namespace std;
+
+// FIXME simple for now
+spoutDX * sender;
+
+class WebView;
+CefRefPtr<WebView> web_view;
 
 //
 // helper function to convert a 
@@ -62,15 +69,12 @@ class WebView;
 class FrameBuffer;
 
 extern bool show_devtools_;
-// FIXME spoutSenderNames * sender;
-// FIXME spoutGLDXinterop * interop;
-// FIXME spoutDirectX * sdx;
 const char* globName = "CEF";
 int fbCount = 0;
 
-// FIXME DXGI_FORMAT texFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+DXGI_FORMAT texFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-// FIXME vector<ID3D11Texture2D *> activeTextures;
+vector<ID3D11Texture2D *> activeTextures;
 vector<HANDLE> activeHandles;
 vector<string> activeNames;
 int numActiveSenders;
@@ -140,7 +144,6 @@ public:
 			// notify the browser process that we want stats
 			auto message = CefProcessMessage::Create("mixer-request-stats");
 			if (message != nullptr && browser_ != nullptr) {
-				//FIXME browser_->SendProcessMessage(PID_BROWSER, message);
 			}
 			return true;
 		}
@@ -163,8 +166,6 @@ class WebApp : public CefApp,
 {
 public:
 	WebApp() {
-		// FIXME sender = new spoutSenderNames;
-		// FIXME sender->SetMaxSenders(10);
 	}
 
 	CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override {
@@ -274,19 +275,14 @@ class FrameBuffer
 public:
 	FrameBuffer() : dirty_(false)
 	{
-		spoutID.append(to_string(fbCount));
-		fbCount++;
-		// FIXME sender->CreateSender(spoutID.c_str(), window_width(), window_height(), NULL, texFormat);
 	}
 
-	string spoutID = "CEF_";
-
 	int32_t width() {
-		return 0;
+		return window_width();
 	}
 
 	int32_t height() {
-		return 0;
+		return window_height();
 	}
 
 	void on_paint(const void* buffer, uint32_t width, uint32_t height)
@@ -360,7 +356,6 @@ class WebView : public CefClient,
 public:
 	WebView(
 		string const& name,
-		// FIXME shared_ptr<d3d11::Device> const& device,
 		int width,
 		int height,
 		bool use_shared_textures,
@@ -368,16 +363,14 @@ public:
 		: name_(name)
 		, width_(width)
 		, height_(height)
-		// FIXME , view_buffer_(make_shared<FrameBuffer>(device))
-		// FIXME , popup_buffer_(make_shared<FrameBuffer>(device))
+		, view_buffer_(make_shared<FrameBuffer>())
+		, popup_buffer_(make_shared<FrameBuffer>())
 		, needs_stats_update_(false)
 		, use_shared_textures_(use_shared_textures)
 		, send_begin_frame_(send_begin_Frame)
-		// FIXME , device_(device)
 	{
 		frame_ = 0;
 		fps_start_ = 0ull;
-		//globName = name.c_str();
 	}
 
 	~WebView() {
@@ -406,7 +399,6 @@ public:
 		{
 			string id = "CEF_";
 			id.append(to_string(i));
-			// FIXME sender->ReleaseSenderName(id.c_str());
 		}
 
 		log_message("html view is closed\n");
@@ -546,6 +538,7 @@ public:
 			lock_guard<mutex> guard(lock_);
 			if (!browser_.get()) {
 				browser_ = browser;
+				browser_->GetHost()->WasResized();
 			}
 		}
 	}
@@ -558,7 +551,8 @@ public:
 
 	void OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& rect) override
 	{
-		log_message("size popup - %d,%d  %dx%d\n", rect.x, rect.y, rect.width, rect.height);	}
+		log_message("size popup - %d,%d  %dx%d\n", rect.x, rect.y, rect.width, rect.height);	
+	}
 
 	bool OnBeforePopup(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
@@ -583,7 +577,6 @@ public:
 
 		CefRefPtr<WebView> view(new WebView(
 			target_frame_name,
-			// FIXME device_,
 			width,
 			height,
 			use_shared_textures(),
@@ -689,14 +682,14 @@ public:
 		}
 	}
 
-private:
-	IMPLEMENT_REFCOUNTING(WebView);
-
 	CefRefPtr<CefBrowser> safe_browser()
 	{
 		lock_guard<mutex> guard(lock_);
 		return browser_;
 	}
+private:
+	IMPLEMENT_REFCOUNTING(WebView);
+
 
 	string name_;
 	int width_;
@@ -711,7 +704,6 @@ private:
 	bool use_shared_textures_;
 	bool send_begin_frame_;
 
-	// FIXME shared_ptr<d3d11::Device> const device_;
 };
 
 
@@ -873,4 +865,89 @@ string cef_version()
 		<< CHROME_VERSION_PATCH << ")";
 	return ver.str();
 }
+
+
+
+
+
+
+
+void create_web_layer(
+	string const& url,
+	int width,
+	int height,
+	bool want_input,
+	bool view_source)
+{
+	CefWindowInfo window_info;
+	window_info.SetAsWindowless(nullptr);
+
+	// we want to use OnAcceleratedPaint
+	window_info.shared_texture_enabled = true;
+
+	// we are going to issue calls to SendExternalBeginFrame
+	// and CEF will not use its internal BeginFrameTimer in this case
+	window_info.external_begin_frame_enabled = true;
+
+	window_info.windowless_rendering_enabled = true;
+
+	window_info.bounds.width = width;
+	window_info.bounds.height = height;
+
+	CefBrowserSettings settings;
+
+	// Set the maximum rate that the HTML content will render at
+	//
+	// NOTE: this value is NOT capped to 60 by CEF when using shared textures and
+	// it is completely ignored when using SendExternalBeginFrame
+	//
+	// For testing, this application uses 120Hz to show that the 60Hz limit is ignored
+	// (set window_info.external_begin_frame_enabled above to false to test)
+	//
+	settings.windowless_frame_rate = 120;
+
+	string name;
+
+	// generate a name for the view based on the url - with the view
+	// source option, we'll dump the page DOM source to a temporary file
+	//
+	// under <USER>\AppData\LocalData\cefmixer
+	//
+	if (view_source)
+	{
+		name = url;
+		std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+		string remove("<>:\"/\\|?*");
+		for (auto const& c : remove) {
+			name.erase(std::remove(name.begin(), name.end(), c), name.end());
+		}
+	}
+
+	CefRefPtr<WebView> view(new WebView(
+		name, width, height,
+		window_info.shared_texture_enabled,
+		window_info.external_begin_frame_enabled));
+	web_view = view;
+
+	CefBrowserHost::CreateBrowser(
+		window_info,
+		view,
+		url,
+		settings, nullptr,
+		nullptr);
+
+}
+
+void view_tick() {
+	if (!web_view)
+		return;
+	auto const browser = web_view->safe_browser();
+	if (browser && browser->GetHost()) {
+		//browser->GetHost()->Invalidate(PET_VIEW);
+		browser->GetHost()->SendExternalBeginFrame();
+	}
+}
+
+
+
 
