@@ -1,0 +1,29 @@
+diff --git a/base/threading/platform_thread_win.cc b/base/threading/platform_thread_win.cc
+index 5aee160aec016..3d129e481de14 100644
+--- a/base/threading/platform_thread_win.cc
++++ b/base/threading/platform_thread_win.cc
+@@ -219,24 +219,6 @@ bool CreateThreadInternal(size_t stack_size,
+ namespace internal {
+ 
+ void AssertMemoryPriority(HANDLE thread, int memory_priority) {
+-#if DCHECK_IS_ON()
+-  static const auto get_thread_information_fn =
+-      reinterpret_cast<decltype(&::GetThreadInformation)>(::GetProcAddress(
+-          ::GetModuleHandle(L"Kernel32.dll"), "GetThreadInformation"));
+-
+-  if (!get_thread_information_fn) {
+-    DCHECK_EQ(win::GetVersion(), win::Version::WIN7);
+-    return;
+-  }
+-
+-  MEMORY_PRIORITY_INFORMATION memory_priority_information = {};
+-  DCHECK(get_thread_information_fn(thread, ::ThreadMemoryPriority,
+-                                   &memory_priority_information,
+-                                   sizeof(memory_priority_information)));
+-
+-  DCHECK_EQ(memory_priority,
+-            static_cast<int>(memory_priority_information.MemoryPriority));
+-#endif
+ }
+ 
+ }  // namespace internal
