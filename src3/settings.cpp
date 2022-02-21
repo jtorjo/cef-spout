@@ -7,6 +7,7 @@ CefSettings settings::cef() {
   sett.windowless_rendering_enabled = windowless_rendering_enabled;
   sett.multi_threaded_message_loop = false;
   sett.no_sandbox = true;
+  // sett.multi_threaded_message_loop = true;
   return sett;
 }
 

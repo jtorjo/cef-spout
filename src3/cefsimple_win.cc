@@ -181,6 +181,13 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 	ComInitializer com_init;
 
+
+	HACCEL accel_table = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_APPLICATION));
+
+
+	HWND h = create_hwnd();
+	MSG msg = {};
+
 	// SimpleHandler implements browser-level callbacks.
 	CefRefPtr<SimpleHandler> handler(new SimpleHandler(false));
 
@@ -195,10 +202,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	CefWindowInfo *window_info = settings::window_info();
 	CefBrowserHost::CreateBrowser(*window_info, handler, url, browser_settings, nullptr, nullptr);
 
-	HACCEL accel_table = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_APPLICATION));
 
-	HWND h = create_hwnd();
-	MSG msg = {};
 	while (msg.message != WM_QUIT)
 	{
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
