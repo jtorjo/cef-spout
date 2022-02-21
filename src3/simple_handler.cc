@@ -16,6 +16,7 @@
 #include "include/wrapper/cef_helpers.h"
 
 #include "SpoutDX.h"
+#include "platform.h"
 
 namespace {
 
@@ -153,16 +154,13 @@ bool SimpleHandler::IsChromeRuntimeEnabled() {
 
 
 void SimpleHandler::OnPaint(
-	CefRefPtr<CefBrowser> /*browser*/,
-	PaintElementType type,
-	const RectList& dirtyRects,
-	const void* buffer,
-	int width,
-    int height)  {
-
-
+	        CefRefPtr<CefBrowser> /*browser*/,
+	        PaintElementType type,
+	        const RectList& dirtyRects,
+	        const void* buffer, int width, int height)  {
 	if (sender)
 		sender->SendImage((unsigned char*)buffer, width, height);
+    log_message("on paint received");
 }
 
   void SimpleHandler::OnAcceleratedPaint(CefRefPtr<CefBrowser> browser,
@@ -171,4 +169,5 @@ void SimpleHandler::OnPaint(
                                   void* shared_handle) {
 	if (sender)
 		sender->SendImage((unsigned char*)shared_handle, width_, height_);
+    log_message("on paint received");
   }

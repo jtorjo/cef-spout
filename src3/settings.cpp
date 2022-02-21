@@ -1,9 +1,10 @@
 #include "settings.h"
 
+bool windowless_rendering_enabled = true;
 
 CefSettings settings::cef() {
   CefSettings sett;
-  //sett.windowless_rendering_enabled = true;
+  sett.windowless_rendering_enabled = windowless_rendering_enabled;
   sett.multi_threaded_message_loop = false;
   sett.no_sandbox = true;
   return sett;
@@ -18,7 +19,7 @@ CefBrowserSettings settings::browser_cef() {
 CefWindowInfo* settings::window_info() {
     // Information used when creating the native window.
     CefWindowInfo *wi = new CefWindowInfo;
-	//wi->windowless_rendering_enabled = true;
+	wi->windowless_rendering_enabled = windowless_rendering_enabled;
 	
 	if (wi->windowless_rendering_enabled) {
 		wi->shared_texture_enabled = false;

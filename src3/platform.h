@@ -19,3 +19,11 @@
 #include <assert.h>
 
 #include <vector>
+
+#include <string>
+#include <mutex>
+#include <thread>
+#include <algorithm>
+#include <functional>
+
+void log_message(const char* msg, ...);
