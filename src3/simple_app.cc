@@ -12,6 +12,7 @@
 #include "include/views/cef_window.h"
 #include "include/wrapper/cef_helpers.h"
 #include "simple_handler.h"
+#include "settings.h"
 
 namespace {
 
@@ -84,17 +85,12 @@ void SimpleApp::OnContextInitialized() {
 
   CefRefPtr<CefCommandLine> command_line = CefCommandLine::GetGlobalCommandLine();
 
-  // Create the browser using the Views framework if "--use-views" is specified
-  // via the command-line. Otherwise, create the browser using the native
-  // platform framework.
-  bool use_views = command_line->HasSwitch("use-views");
 
   // SimpleHandler implements browser-level callbacks.
-  CefRefPtr<SimpleHandler> handler(new SimpleHandler(use_views));
+  CefRefPtr<SimpleHandler> handler(new SimpleHandler(false));
 
   // Specify CEF browser settings here.
-  CefBrowserSettings browser_settings;
-  browser_settings.windowless_frame_rate = 120;
+  CefBrowserSettings browser_settings = settings::browser_cef();
 
   std::string url;
 
@@ -105,27 +101,9 @@ void SimpleApp::OnContextInitialized() {
     url = "http://www.google.com";
   url = "http://html5test.com";
 
-  if (use_views) {
-  } else {
     // Information used when creating the native window.
-    CefWindowInfo window_info;
-	window_info.shared_texture_enabled = true;
-	window_info.external_begin_frame_enabled = true;
-	window_info.windowless_rendering_enabled = true;
-	window_info.SetAsWindowless(nullptr);
-
-#if defined(OS_WIN)
-    // On Windows we need to specify certain flags that will be passed to
-    // CreateWindowEx().
-//    window_info.SetAsPopup(nullptr, "cefsimple");
-#endif
-
-
-
-
-
-    CefBrowserHost::CreateBrowser(window_info, handler, url, browser_settings, nullptr, nullptr);
-  }
+    CefWindowInfo *window_info = settings::window_info();
+    CefBrowserHost::CreateBrowser(*window_info, handler, url, browser_settings, nullptr, nullptr);
 }
 
 CefRefPtr<CefClient> SimpleApp::GetDefaultClient() {

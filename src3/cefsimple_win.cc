@@ -3,23 +3,22 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include <windows.h>
+#include "platform.h"
 
 #include "include/cef_command_line.h"
 #include "include/cef_sandbox_win.h"
-#include "tests/cefsimple/simple_app.h"
+#include "simple_app.h"
+#include "settings.h"
 
-// When generating projects with CMake the CEF_USE_SANDBOX value will be defined
-// automatically if using the required compiler version. Pass -DUSE_SANDBOX=OFF
-// to the CMake command-line to disable use of the sandbox.
-// Uncomment this line to manually enable sandbox support.
-// #define CEF_USE_SANDBOX 1
+class ComInitializer
+{
+public:
+	ComInitializer() {
+		CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+	}
+	~ComInitializer() { CoUninitialize(); }
+};
 
-#if defined(CEF_USE_SANDBOX)
-// The cef_sandbox.lib static library may not link successfully with all VS
-// versions.
-#pragma comment(lib, "cef_sandbox.lib")
-#endif
 
 // Entry point function for all processes.
 int APIENTRY wWinMain(HINSTANCE hInstance,
@@ -29,17 +28,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   UNREFERENCED_PARAMETER(hPrevInstance);
   UNREFERENCED_PARAMETER(lpCmdLine);
 
+
   // Enable High-DPI support on Windows 7 or newer.
   CefEnableHighDPISupport();
 
   void* sandbox_info = nullptr;
-
-#if defined(CEF_USE_SANDBOX)
-  // Manage the life span of the sandbox information object. This is necessary
-  // for sandbox support on Windows. See cef_sandbox_win.h for complete details.
-  CefScopedSandboxInfo scoped_sandbox;
-  sandbox_info = scoped_sandbox.sandbox_info();
-#endif
 
   // Provide CEF with command-line arguments.
   CefMainArgs main_args(hInstance);
@@ -58,26 +51,16 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   command_line->InitFromString(::GetCommandLineW());
 
   // Specify CEF global settings here.
-  CefSettings settings;
-  settings.windowless_rendering_enabled = true;
-//  settings.multi_threaded_message_loop = true;
-
-  if (command_line->HasSwitch("enable-chrome-runtime")) {
-    // Enable experimental Chrome runtime. See issue #2969 for details.
-    settings.chrome_runtime = true;
-  }
-
-#if !defined(CEF_USE_SANDBOX)
-  settings.no_sandbox = true;
-#endif
+  CefSettings sett = settings::cef() ;
 
   // SimpleApp implements application-level callbacks for the browser process.
   // It will create the first browser instance in OnContextInitialized() after
   // CEF has initialized.
   CefRefPtr<SimpleApp> app(new SimpleApp);
 
+  ComInitializer com_init;
   // Initialize CEF.
-  CefInitialize(main_args, settings, app.get(), sandbox_info);
+  CefInitialize(main_args, sett, app.get(), sandbox_info);
 
   // Run the CEF message loop. This will block until CefQuitMessageLoop() is
   // called.

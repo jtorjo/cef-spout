@@ -38,6 +38,9 @@ SimpleHandler::SimpleHandler(bool use_views)
   DCHECK(!g_instance);
   g_instance = this;
 
+  width_ = 1280; 
+  height_ = 720;
+
    sender = new spoutDX();
 	auto ok = sender->OpenDirectX11();
 	sender->SetMaxSenders(10);
@@ -151,8 +154,8 @@ bool SimpleHandler::IsChromeRuntimeEnabled() {
 
 void SimpleHandler::OnPaint(
 	CefRefPtr<CefBrowser> /*browser*/,
-	CefRenderHandler::PaintElementType type,
-	const CefRenderHandler::RectList& dirtyRects,
+	PaintElementType type,
+	const RectList& dirtyRects,
 	const void* buffer,
 	int width,
     int height)  {
@@ -161,3 +164,11 @@ void SimpleHandler::OnPaint(
 	if (sender)
 		sender->SendImage((unsigned char*)buffer, width, height);
 }
+
+  void SimpleHandler::OnAcceleratedPaint(CefRefPtr<CefBrowser> browser,
+                                  PaintElementType type,
+                                  const RectList& dirtyRects,
+                                  void* shared_handle) {
+	if (sender)
+		sender->SendImage((unsigned char*)shared_handle, width_, height_);
+  }

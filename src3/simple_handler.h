@@ -10,6 +10,7 @@
 #include <list>
 
 class SimpleHandler : public CefClient,
+					  public CefDisplayHandler,
                       public CefRenderHandler,
                       public CefLifeSpanHandler,
                       public CefLoadHandler {
@@ -21,13 +22,10 @@ class SimpleHandler : public CefClient,
   static SimpleHandler* GetInstance();
 
   // CefClient methods:
-	CefRefPtr<CefRenderHandler> GetRenderHandler() override {
-		return this;
-	}
-  virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override {
-    return this;
-  }
-  virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
+	virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override { return this; }
+	virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override { return this; }
+	virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override { return this; }
+	virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
 
 
   // CefLifeSpanHandler methods:
@@ -42,9 +40,8 @@ class SimpleHandler : public CefClient,
                            const CefString& errorText,
                            const CefString& failedUrl) override;
 
-	void GetViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect) override
-	{
-		rect.Set(0, 0, 1280, 720);
+	void GetViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect) override {
+		rect.Set(0, 0, width_, height_);
 	}
 
 
@@ -64,6 +61,10 @@ class SimpleHandler : public CefClient,
 		const void* buffer,
 		int width,
 		int height) override;
+  virtual void OnAcceleratedPaint(CefRefPtr<CefBrowser> browser,
+                                  PaintElementType type,
+                                  const RectList& dirtyRects,
+                                  void* shared_handle) override;
 
  private:
   // Platform-specific implementation.
@@ -78,6 +79,7 @@ class SimpleHandler : public CefClient,
   BrowserList browser_list_;
 
   bool is_closing_;
+  int width_, height_;
 
   // Include the default reference counting implementation.
   IMPLEMENT_REFCOUNTING(SimpleHandler);
