@@ -22,7 +22,7 @@ CefWindowInfo* settings::window_info() {
 	wi->windowless_rendering_enabled = windowless_rendering_enabled;
 	
 	if (wi->windowless_rendering_enabled) {
-		wi->shared_texture_enabled = false;
+		wi->shared_texture_enabled = true;//false;
 		wi->external_begin_frame_enabled = true;
 		wi->SetAsWindowless(nullptr);
 	}

@@ -53,6 +53,8 @@ class SimpleHandler : public CefClient,
   // Returns true if the Chrome runtime is enabled.
   static bool IsChromeRuntimeEnabled();
 
+CefRefPtr<CefBrowser> first_browser();
+
 
   void OnPaint(
 		CefRefPtr<CefBrowser> /*browser*/,

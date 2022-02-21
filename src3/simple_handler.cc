@@ -66,6 +66,14 @@ void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
   browser_list_.push_back(browser);
 }
 
+CefRefPtr<CefBrowser> SimpleHandler::first_browser() {
+    CefRefPtr<CefBrowser> browser;
+    if (browser_list_.size() > 0)
+        browser = browser_list_.front();
+    return browser;
+}
+
+
 bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
 

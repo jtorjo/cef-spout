@@ -9,6 +9,7 @@
 #include "include/cef_command_line.h"
 #include "include/cef_sandbox_win.h"
 #include "simple_app.h"
+#include "simple_handler.h"
 #include "settings.h"
 
 using namespace std;
@@ -43,7 +44,8 @@ public:
 		command_line->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
 	}
 
-	virtual void OnContextInitialized() override {}
+	virtual void OnContextInitialized() override {
+	}
 	void OnContextCreated(
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
@@ -179,7 +181,21 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
   startup();
 
-  ComInitializer com_init;
+	ComInitializer com_init;
+
+	// SimpleHandler implements browser-level callbacks.
+	CefRefPtr<SimpleHandler> handler(new SimpleHandler(false));
+
+	// Specify CEF browser settings here.
+	CefBrowserSettings browser_settings = settings::browser_cef();
+
+	std::string url;
+	url = "http://www.google.com";
+	url = "http://html5test.com";
+
+	// Information used when creating the native window.
+	CefWindowInfo *window_info = settings::window_info();
+	CefBrowserHost::CreateBrowser(*window_info, handler, url, browser_settings, nullptr, nullptr);
 
 	HACCEL accel_table = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_APPLICATION));
 
@@ -198,6 +214,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 		else
 		{
 			// render
+			auto browser = SimpleHandler::GetInstance()->first_browser();
+			if(browser)
+				browser->GetHost()->SendExternalBeginFrame();
 		}
 	}
 
