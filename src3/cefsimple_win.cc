@@ -161,27 +161,25 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   UNREFERENCED_PARAMETER(lpCmdLine);
   instance_ = hInstance;
 
-  // Enable High-DPI support on Windows 7 or newer.
-  CefEnableHighDPISupport();
+	// Enable High-DPI support on Windows 7 or newer.
+	CefEnableHighDPISupport();
 
-  // Provide CEF with command-line arguments.
-  CefMainArgs main_args(hInstance);
+	// Provide CEF with command-line arguments.
+	CefMainArgs main_args(hInstance);
 
-  // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
-  // that share the same executable. This function checks the command-line and,
-  // if this is a sub-process, executes the appropriate logic.
-  CefRefPtr<WebApp> exe_process_app(new WebApp());
-  int exit_code = CefExecuteProcess(main_args, exe_process_app, nullptr);
-  if (exit_code >= 0) {
-    // The sub-process has completed so return here.
-    return exit_code;
-  }
+	// CEF applications have multiple sub-processes (render, plugin, GPU, etc)
+	// that share the same executable. This function checks the command-line and,
+	// if this is a sub-process, executes the appropriate logic.
+	CefRefPtr<WebApp> exe_process_app(new WebApp());
+	int exit_code = CefExecuteProcess(main_args, exe_process_app, nullptr);
+	if (exit_code >= 0) {
+	// The sub-process has completed so return here.
+	return exit_code;
+	}
 
-  startup();
+	startup();
 
 	ComInitializer com_init;
-
-
 	HACCEL accel_table = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_APPLICATION));
 
 
@@ -202,6 +200,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	CefWindowInfo *window_info = settings::window_info();
 	CefBrowserHost::CreateBrowser(*window_info, handler, url, browser_settings, nullptr, nullptr);
 
+	::Sleep(1000);
 
 	while (msg.message != WM_QUIT)
 	{
