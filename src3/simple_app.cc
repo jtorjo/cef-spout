@@ -82,28 +82,6 @@ SimpleApp::SimpleApp() {}
 
 void SimpleApp::OnContextInitialized() {
   CEF_REQUIRE_UI_THREAD();
-
-  CefRefPtr<CefCommandLine> command_line = CefCommandLine::GetGlobalCommandLine();
-
-
-  // SimpleHandler implements browser-level callbacks.
-  CefRefPtr<SimpleHandler> handler(new SimpleHandler(false));
-
-  // Specify CEF browser settings here.
-  CefBrowserSettings browser_settings = settings::browser_cef();
-
-  std::string url;
-
-  // Check if a "--url=" value was provided via the command-line. If so, use
-  // that instead of the default URL.
-  url = command_line->GetSwitchValue("url");
-  if (url.empty())
-    url = "http://www.google.com";
-  url = "http://html5test.com";
-
-    // Information used when creating the native window.
-    CefWindowInfo *window_info = settings::window_info();
-    CefBrowserHost::CreateBrowser(*window_info, handler, url, browser_settings, nullptr, nullptr);
 }
 
 CefRefPtr<CefClient> SimpleApp::GetDefaultClient() {

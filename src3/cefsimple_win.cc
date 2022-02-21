@@ -36,12 +36,10 @@ public:
 		CefRefPtr<CefCommandLine> command_line) override
 	{
 		// disable creation of a GPUCache/ folder on disk
-		command_line->AppendSwitch("disable-gpu-shader-disk-cache");
-		//command_line->AppendSwitch("disable-accelerated-video-decode");
-		command_line->AppendSwitch("show-fps-counter");		
-		//command_line->AppendSwitch("disable-gpu-vsync");
-		command_line->AppendSwitchWithValue("use-angle", "d3d11");
-		command_line->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
+//		command_line->AppendSwitch("disable-gpu-shader-disk-cache");
+//		command_line->AppendSwitch("show-fps-counter");		
+//		command_line->AppendSwitchWithValue("use-angle", "d3d11");
+//		command_line->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
 	}
 
 	virtual void OnContextInitialized() override {
@@ -215,8 +213,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 		{
 			// render
 			auto browser = SimpleHandler::GetInstance()->first_browser();
-			if(browser)
+			if(browser) {
+				browser->GetHost()->WasResized();
 				browser->GetHost()->SendExternalBeginFrame();
+			}
 		}
 	}
 
