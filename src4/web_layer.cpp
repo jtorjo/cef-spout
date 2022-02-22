@@ -317,6 +317,8 @@ public:
 
 		if (!shared_buffer_ || (shared_buffer_->width() != width) || (shared_buffer_->height() != height))
 		{
+			auto texture = composition_->create_texture();
+			//shared_buffer_ = make_shared<d3d11::Texture2D>(texture, nullptr);
 			shared_buffer_ = composition_->device()->create_texture(width, height, DXGI_FORMAT_B8G8R8A8_UNORM, nullptr, 0);
 			sw_buffer_ = shared_ptr<uint8_t>((uint8_t*)malloc(cb), free);
 		}
@@ -327,12 +329,12 @@ public:
 			memcpy(sw_buffer_.get(), buffer, cb);
 		}
 
+
 		dirty_ = true;
 
-		// quick test
-		// 
-		// i need to create shared texture
-		//on_gpu_paint( shared_buffer_->share_handle());
+//		shared_buffer_->bind( composition_->device()->immedidate_context() );
+	//	shared_buffer_->copy_from(buffer, stride, height);
+		//composition_->draw_spout(shared_buffer_->texture_handle());
 	}
 
 	//
@@ -340,6 +342,8 @@ public:
 	//
 	void on_gpu_paint(void* shared_handle)
 	{
+		log_message("fatal: should never arrive here");
+		return;
 		// Note: we're not handling keyed mutexes yet
 
 		lock_guard<mutex> guard(lock_);
@@ -362,7 +366,7 @@ public:
 		}
 
 		dirty_ = true;
-		composition_->draw_spout(shared_handle);
+//		composition_->draw_spout(shared_handle);
 	}
 
 	//

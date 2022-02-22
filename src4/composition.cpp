@@ -288,8 +288,13 @@ shared_ptr<Layer> Composition::layer_from_point(int32_t& x, int32_t& y)
 	return nullptr;
 }
 
-void Composition::draw_spout(void * buffer) {
-	sender_.SendImage((unsigned char*)buffer, width_, height_);
+void Composition::draw_spout(ID3D11Texture2D* texture) {
+	sender_.SendTexture(texture);
+}
+ID3D11Texture2D* Composition::create_texture() {
+	ID3D11Texture2D* texture = nullptr;
+	sender_.CreateDX11texture(*device_, width_, height_, texFormat, &texture);
+	return texture;
 }
 
 

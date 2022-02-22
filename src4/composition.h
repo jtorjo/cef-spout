@@ -104,7 +104,9 @@ public:
 		return device_;
 	}
 
-	void draw_spout(void * buffer);
+	void draw_spout(ID3D11Texture2D* texture);
+
+	ID3D11Texture2D* create_texture();
 
 private:
 

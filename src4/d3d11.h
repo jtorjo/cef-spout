@@ -151,6 +151,7 @@ namespace d3d11 {
 		
 		void copy_from(const void* buffer, uint32_t stride, uint32_t rows);
 
+		ID3D11Texture2D* texture_handle() const { return &*texture_;}
 	private:
 
 		HANDLE share_handle_;
