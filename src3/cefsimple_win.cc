@@ -13,11 +13,24 @@
 #include "settings.h"
 
 #include "SpoutDX.h"
+#include "d3d11.h"
 
 using namespace std;
 
-// FIXME simple for now
-spoutDX * sender;
+condition_variable signal_;
+atomic_bool ready_;
+mutex lock_;
+HINSTANCE instance_;
+HWND hwnd_;
+shared_ptr<thread> thread_;
+bool resize_ = true;
+
+auto window_width_ = window_width();
+auto window_height_ = window_height();
+
+spoutDX * sender_;
+shared_ptr<d3d11::Device> device_;
+shared_ptr<d3d11::SwapChain> swap_chain_;
 
 class ComInitializer
 {
@@ -82,26 +95,8 @@ private:
 	IMPLEMENT_REFCOUNTING(WebApp);
 };
 
-condition_variable signal_;
-atomic_bool ready_;
-mutex lock_;
-HINSTANCE instance_;
-shared_ptr<thread> thread_;
 
 void message_loop();
-
-void log_message(const char* msg, ...)
-{
-	// old-school, printf style logging
-	if (msg) 
-	{
-		char buff[512];
-		va_list args;
-		va_start(args, msg);
-		vsprintf(buff, msg, args);
-		OutputDebugStringA(buff);
-	}
-}
 
 void startup() {
 	thread_ = make_shared<thread>(&message_loop);
@@ -136,6 +131,62 @@ void message_loop()
 	log_message("cef is shutdown\n");
 }
 
+void render()
+{
+	if (!device_)
+		return;
+	auto ctx = device_->immedidate_context();
+	if (!ctx || !swap_chain_) {
+		return;
+	}
+
+	swap_chain_->bind(ctx);
+
+	// is there a request to resize ... if so, resize
+	// both the swapchain and the composition
+	if (resize_)
+	{
+		RECT rc;
+		GetClientRect(hwnd_, &rc);
+		auto const width = rc.right - rc.left;
+		auto const height = rc.bottom - rc.top;
+		if (width && height)
+		{
+			resize_ = false;
+			swap_chain_->resize(width, height);
+		}
+		resize_ = false;
+	}
+
+	// clear the render-target
+	swap_chain_->clear(0.0f, 0.0f, 1.0f, 1.0f);
+
+	// render our scene
+	//layer_->render(ctx);
+
+	// present to window
+	swap_chain_->present(1);
+}
+
+
+LRESULT CALLBACK wnd_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp){
+	switch(message) {
+	case WM_CREATE:
+		hwnd_ = hwnd;
+		swap_chain_ = device_->create_swapchain(hwnd, window_width_, window_height_);
+		break;
+		case WM_PAINT:
+		{
+			PAINTSTRUCT ps;
+			BeginPaint(hwnd, &ps);
+			EndPaint(hwnd, &ps);
+		}
+		break;
+
+	}
+	return DefWindowProc(hwnd, message, wp, lp);
+}
+
 HWND create_hwnd() {
 	LPCWSTR class_name = L"_main_window_";
 
@@ -145,7 +196,7 @@ HWND create_hwnd() {
 	{
 		wcex.cbSize = sizeof(WNDCLASSEX);
 		wcex.style = CS_HREDRAW | CS_VREDRAW;
-		wcex.lpfnWndProc = DefWindowProc;
+		wcex.lpfnWndProc = wnd_proc;
 		wcex.cbClsExtra = 0;
 		wcex.cbWndExtra = 0;
 		wcex.hInstance = instance_;
@@ -197,15 +248,16 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	return exit_code;
 	}
 
-	sender = new spoutDX();
-	auto ok = sender->OpenDirectX11();
-	sender->SetSenderName("Simple Windows sender");
-	sender->SetSenderFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
-	sender->SetMaxSenders(10);
-	auto width = 1280;
-	auto height = 720;
-	auto empty = new unsigned char[width * height * 4];
-	sender->SendImage(empty, width, height);
+	sender_ = new spoutDX();
+	auto ok = sender_->OpenDirectX11();
+	if (!ok)
+		return -1;
+	device_ = make_shared<d3d11::Device>(sender_->GetDX11Device(), sender_->GetDX11Context());
+	sender_->SetSenderName("Simple Windows sender");
+	sender_->SetSenderFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+	sender_->SetMaxSenders(10);
+	auto empty = new unsigned char[window_width_ * window_height_ * 4];
+	sender_->SendImage(empty, window_width_, window_height_);
 
 
 	startup();
@@ -232,6 +284,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 		}
 		else
 		{
+			render();
 			// render
 			auto browser = SimpleHandler::GetInstance()->first_browser();
 			if(browser) {

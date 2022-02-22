@@ -13,6 +13,10 @@ set(ALL_SRCS
 	simple_handler_win.cc
 	settings.cpp
 	settings.h
+	d3d11.h
+	d3d11.cpp
+	util.h
+	util.cpp
 )
 	
 # Logical target used to link the libcef library.

@@ -26,4 +26,5 @@
 #include <algorithm>
 #include <functional>
 
-void log_message(const char* msg, ...);
+#include "util.h"
+

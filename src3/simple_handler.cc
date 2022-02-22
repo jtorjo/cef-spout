@@ -19,7 +19,7 @@
 #include "platform.h"
 
 // FIXME simple for now
-extern spoutDX * sender;
+extern spoutDX * sender_;
 
 namespace {
 
@@ -40,9 +40,8 @@ SimpleHandler::SimpleHandler(bool use_views)
   DCHECK(!g_instance);
   g_instance = this;
 
-  width_ = 1280; 
-  height_ = 720;
-
+  width_ = window_width(); 
+  height_ = window_height();
 }
 
 SimpleHandler::~SimpleHandler() {
@@ -162,8 +161,8 @@ void SimpleHandler::OnPaint(
 	        PaintElementType type,
 	        const RectList& dirtyRects,
 	        const void* buffer, int width, int height)  {
-	if (sender)
-		sender->SendImage((unsigned char*)buffer, width, height);
+	if (sender_)
+		sender_->SendImage((unsigned char*)buffer, width, height);
     log_message("on paint received");
 }
 
@@ -171,7 +170,7 @@ void SimpleHandler::OnPaint(
                                   PaintElementType type,
                                   const RectList& dirtyRects,
                                   void* shared_handle) {
-	if (sender)
-		sender->SendImage((unsigned char*)shared_handle, width_, height_);
+	if (sender_)
+		sender_->SendImage((unsigned char*)shared_handle, width_, height_);
     log_message("on paint received");
   }
