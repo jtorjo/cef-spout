@@ -43,6 +43,18 @@ public:
 	}
 
 	virtual void OnContextInitialized() override {
+		// SimpleHandler implements browser-level callbacks.
+		handler_ = new SimpleHandler(false);
+
+		// Specify CEF browser settings here.
+		CefBrowserSettings browser_settings = settings::browser_cef();
+
+		std::string url;
+		url = "http://html5test.com";
+
+		// Information used when creating the native window.
+		CefWindowInfo *window_info = settings::window_info();
+		browser_ = CefBrowserHost::CreateBrowserSync(*window_info, handler_, url, browser_settings, nullptr, nullptr);
 	}
 	void OnContextCreated(
 		CefRefPtr<CefBrowser> browser,
@@ -59,6 +71,9 @@ public:
 	}
 
 private:
+    CefRefPtr<CefBrowser> browser_;
+    CefRefPtr<SimpleHandler> handler_;
+
 	IMPLEMENT_REFCOUNTING(WebApp);
 };
 
@@ -186,19 +201,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	HWND h = create_hwnd();
 	MSG msg = {};
 
-	// SimpleHandler implements browser-level callbacks.
-	CefRefPtr<SimpleHandler> handler(new SimpleHandler(false));
-
-	// Specify CEF browser settings here.
-	CefBrowserSettings browser_settings = settings::browser_cef();
-
-	std::string url;
-	url = "http://www.google.com";
-	url = "http://html5test.com";
-
-	// Information used when creating the native window.
-	CefWindowInfo *window_info = settings::window_info();
-	CefBrowserHost::CreateBrowser(*window_info, handler, url, browser_settings, nullptr, nullptr);
 
 	::Sleep(1000);
 
