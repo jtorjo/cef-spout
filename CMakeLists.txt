@@ -58,7 +58,7 @@ file(GLOB spout_inc_files "lib_spout/SpoutGL/*.h")
 # directory.
 add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
 
-add_subdirectory(src3)
+add_subdirectory(src4)
 
 # Display configuration settings.
 PRINT_CEF_CONFIG()
