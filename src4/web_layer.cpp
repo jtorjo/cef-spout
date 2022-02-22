@@ -333,26 +333,33 @@ public:
 		dirty_ = true;
 	}
 	*/
+	void resize(uint32_t width, uint32_t height)
+	{
+		lock_guard<mutex> guard(lock_);
+
+		if (height < 100)
+			return;
+		uint32_t stride = width * 4;
+		size_t cb = stride * height;
+
+		log_message("resize buffer %d %d", width, height);
+		shared_buffer_ = composition_->device()->create_texture(width, height, DXGI_FORMAT_B8G8R8A8_UNORM, nullptr, 0);
+		sw_buffer_ = shared_ptr<uint8_t>((uint8_t*)malloc(cb), free);
+	}
 
 	void on_paint(const void* buffer, uint32_t width, uint32_t height)
 	{
 		uint32_t stride = width * 4;
 		size_t cb = stride * height;
 
-		if (!shared_buffer_ || (shared_buffer_->width() != width) || (shared_buffer_->height() != height))
-		{
-			shared_buffer_ = composition_->device()->create_texture(width, height, DXGI_FORMAT_B8G8R8A8_UNORM, nullptr, 0);
-			sw_buffer_ = shared_ptr<uint8_t>((uint8_t*)malloc(cb), free);
-		}
+		lock_guard<mutex> guard(lock_);
 
-		if (sw_buffer_ && buffer)
+		if (sw_buffer_ && buffer && shared_buffer_ && shared_buffer_->width() == width && shared_buffer_->height() == height)
 		{
 			// todo: support dirty rect(s)
 			memcpy(sw_buffer_.get(), buffer, cb);
+			dirty_ = true;
 		}
-
-
-		dirty_ = true;
 	}
 
 	//
@@ -729,6 +736,8 @@ public:
 		{
 			width_ = width;
 			height_ = height;
+			view_buffer_->resize(width, height);
+			popup_buffer_->resize(width, height);
 
 			auto const browser = safe_browser();
 			if (browser)

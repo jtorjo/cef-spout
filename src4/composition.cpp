@@ -414,6 +414,7 @@ shared_ptr<Composition> create_composition(
 						auto const h = to_float(obj, "height", 1.0f);
 
 						layer->move(x, y, w, h);
+
 					}
 				}
 			}
