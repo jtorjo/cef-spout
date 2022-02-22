@@ -380,10 +380,7 @@ shared_ptr<Composition> create_composition(
 
 	auto const dict = val->GetDictionary();
 
-	auto const width = to_int(dict, "width", 1280);
-	auto const height = to_int(dict, "height", 720);
-
-	auto const composition = make_shared<Composition>(width, height);
+	auto const composition = make_shared<Composition>(window_width(), window_height());
 
 	// create and add layers as defined in the layers array
 	if (dict->GetType("layers") == VTYPE_LIST)

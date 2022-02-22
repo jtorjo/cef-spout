@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <sstream>
+#include <fstream>
 
 using namespace std;
 
@@ -13,11 +14,13 @@ LARGE_INTEGER qi_freq_ = {};
 
 int window_width() {
 	//return 1280;
+	return 5000;
 	return 6000;
 	return 1280 *2;
 }
 int window_height() {
 	//return 720;
+	return 1350;
 	return 2000;
 	return 720 * 2;
 }
@@ -34,16 +37,23 @@ uint64_t time_now()
 		(t.QuadPart / double(qi_freq_.QuadPart)) * 1000000);
 }
 
+std::ofstream spout_log;
+
 void log_message(const char* msg, ...)
 {
 	// old-school, printf style logging
 	if (msg) 
 	{
+		if (!spout_log.is_open())
+			spout_log.open("spout.txt", std::ofstream::out | std::ofstream::app);
+
 		char buff[512];
 		va_list args;
 		va_start(args, msg);
 		vsprintf(buff, msg, args);
 		OutputDebugStringA(buff);
+		spout_log << buff;
+		spout_log.flush();
 	}
 }
 
