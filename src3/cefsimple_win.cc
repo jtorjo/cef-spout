@@ -12,7 +12,12 @@
 #include "simple_handler.h"
 #include "settings.h"
 
+#include "SpoutDX.h"
+
 using namespace std;
+
+// FIXME simple for now
+spoutDX * sender;
 
 class ComInitializer
 {
@@ -36,10 +41,10 @@ public:
 		CefRefPtr<CefCommandLine> command_line) override
 	{
 		// disable creation of a GPUCache/ folder on disk
-//		command_line->AppendSwitch("disable-gpu-shader-disk-cache");
-//		command_line->AppendSwitch("show-fps-counter");		
-//		command_line->AppendSwitchWithValue("use-angle", "d3d11");
-//		command_line->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
+		command_line->AppendSwitch("disable-gpu-shader-disk-cache");
+		command_line->AppendSwitch("show-fps-counter");		
+		command_line->AppendSwitchWithValue("use-angle", "d3d11");
+		command_line->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
 	}
 
 	virtual void OnContextInitialized() override {
@@ -191,6 +196,17 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	// The sub-process has completed so return here.
 	return exit_code;
 	}
+
+	sender = new spoutDX();
+	auto ok = sender->OpenDirectX11();
+	sender->SetSenderName("Simple Windows sender");
+	sender->SetSenderFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+	sender->SetMaxSenders(10);
+	auto width = 1280;
+	auto height = 720;
+	auto empty = new unsigned char[width * height * 4];
+	sender->SendImage(empty, width, height);
+
 
 	startup();
 

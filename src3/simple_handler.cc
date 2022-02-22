@@ -18,12 +18,13 @@
 #include "SpoutDX.h"
 #include "platform.h"
 
+// FIXME simple for now
+extern spoutDX * sender;
+
 namespace {
 
 SimpleHandler* g_instance = nullptr;
 
-// FIXME simple for now
-spoutDX * sender;
 
 // Returns a data: URI with the specified contents.
 std::string GetDataURI(const std::string& data, const std::string& mime_type) {
@@ -42,11 +43,6 @@ SimpleHandler::SimpleHandler(bool use_views)
   width_ = 1280; 
   height_ = 720;
 
-   sender = new spoutDX();
-	auto ok = sender->OpenDirectX11();
-	sender->SetMaxSenders(10);
-
-	sender->SetSenderName("Simple Windows sender");
 }
 
 SimpleHandler::~SimpleHandler() {
