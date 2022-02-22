@@ -290,6 +290,7 @@ shared_ptr<Layer> Composition::layer_from_point(int32_t& x, int32_t& y)
 
 void Composition::draw_spout(ID3D11Texture2D* texture) {
 	sender_.SendTexture(texture);
+	sender_.HoldFps(60);
 }
 ID3D11Texture2D* Composition::create_texture() {
 	ID3D11Texture2D* texture = nullptr;

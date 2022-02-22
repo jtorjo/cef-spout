@@ -341,8 +341,6 @@ public:
 
 		if (!shared_buffer_ || (shared_buffer_->width() != width) || (shared_buffer_->height() != height))
 		{
-			auto texture = composition_->create_texture();
-			//shared_buffer_ = make_shared<d3d11::Texture2D>(texture, nullptr);
 			shared_buffer_ = composition_->device()->create_texture(width, height, DXGI_FORMAT_B8G8R8A8_UNORM, nullptr, 0);
 			sw_buffer_ = shared_ptr<uint8_t>((uint8_t*)malloc(cb), free);
 		}
@@ -355,10 +353,6 @@ public:
 
 
 		dirty_ = true;
-
-//		shared_buffer_->bind( composition_->device()->immedidate_context() );
-	//	shared_buffer_->copy_from(buffer, stride, height);
-		//composition_->draw_spout(shared_buffer_->texture_handle());
 	}
 
 	//
@@ -412,6 +406,7 @@ public:
 				sw_buffer_.get(),
 				shared_buffer_->width() * 4,
 				shared_buffer_->height());
+			composition_->draw_spout(shared_buffer_->texture_handle());
 		}
 
 		dirty_ = false;
