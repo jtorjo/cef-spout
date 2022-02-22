@@ -330,7 +330,9 @@ public:
 		dirty_ = true;
 
 		// quick test
-		on_gpu_paint( shared_buffer_->share_handle());
+		// 
+		// i need to create shared texture
+		//on_gpu_paint( shared_buffer_->share_handle());
 	}
 
 	//

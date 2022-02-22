@@ -12,13 +12,13 @@ using namespace std;
 LARGE_INTEGER qi_freq_ = {};
 
 int window_width() {
-	return 1280;
+	//return 1280;
 	return 6000;
 	return 1280 *2;
 }
 int window_height() {
-	return 720;
-	return 4000;
+	//return 720;
+	return 2000;
 	return 720 * 2;
 }
 
