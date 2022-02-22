@@ -567,7 +567,7 @@ public:
 				auto const w = view_buffer_ ? view_buffer_->width() : 0;
 				auto const h = view_buffer_ ? view_buffer_->height() : 0;
 
-				log_message("html: OnAcceleratedPaint (%dx%d), fps: %3.2f\n", w, h, fps);
+				log_message("html: OnPaint (%dx%d), fps: %3.2f\n", w, h, fps);
 
 				frame_ = 0;
 				fps_start_ = time_now();
@@ -646,6 +646,8 @@ public:
 				browser_ = browser;
 			}
 		}
+		// force resize
+		resize(width_, height_, true);
 	}
 
 	void OnPopupShow(CefRefPtr<CefBrowser> browser, bool show) override
@@ -729,10 +731,10 @@ public:
 	{
 	}
 
-	void resize(int width, int height)
+	void resize(int width, int height, bool force = false)
 	{
 		// only signal change if necessary
-		if (width != width_ || height != height_)
+		if (width != width_ || height != height_ || force)
 		{
 			width_ = width;
 			height_ = height;

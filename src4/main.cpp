@@ -55,17 +55,42 @@ public:
 		return hwnd_;
 	}
 
-	static Window* open(
-		HINSTANCE instance, std::string const& json, int32_t width, int32_t height)
-	{
-		// create a composition to represent our 2D-scene
-		auto const comp = create_composition(json);
-		if (!comp) {
-			return nullptr;
-		}
-
+private:
+	static HWND create_out_window(HINSTANCE instance, std::string title, int width, int height) {
 		LPCWSTR class_name = L"_main_window_";
+		WNDCLASSEXW wcex = {};
+		wcex.cbSize = sizeof(WNDCLASSEX);
+		if (!GetClassInfoEx(instance, class_name, &wcex))
+		{
+			wcex.cbSize = sizeof(WNDCLASSEX);
+			wcex.style = CS_HREDRAW | CS_VREDRAW;
+			wcex.lpfnWndProc = DefWindowProc;
+			wcex.cbClsExtra = 0;
+			wcex.cbWndExtra = 0;
+			wcex.hInstance = instance;
+			wcex.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
+			wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+			wcex.hbrBackground = (HBRUSH)(COLOR_WINDOWTEXT + 1);
+			wcex.lpszMenuName = nullptr;
+			wcex.lpszClassName = class_name;
+			wcex.hIconSm = nullptr;
+			if (!RegisterClassExW(&wcex)) {
+				return nullptr;
+			}
+		}
+		auto const hwnd = CreateWindow(class_name,
+			to_utf16(title).c_str(),
+			WS_OVERLAPPEDWINDOW,
+			0,0, width, height,
+			nullptr,
+			nullptr,
+			instance,
+			nullptr);
 
+		return hwnd;
+	}
+	static HWND create_in_window(HINSTANCE instance, HWND parent, LPVOID self, int width, int height) {
+		LPCWSTR class_name = L"_inner_window_";
 		WNDCLASSEXW wcex = {};
 		wcex.cbSize = sizeof(WNDCLASSEX);
 		if (!GetClassInfoEx(instance, class_name, &wcex))
@@ -86,6 +111,27 @@ public:
 				return nullptr;
 			}
 		}
+		auto const hwnd = CreateWindow(class_name,
+			L"",
+			WS_CHILDWINDOW | WS_VISIBLE,
+			0, 0, width, height,
+			parent,
+			nullptr,
+			instance,
+			self);
+
+		return hwnd;
+	}
+public:
+
+	static Window* open(
+		HINSTANCE instance, std::string const& json, int32_t width, int32_t height)
+	{
+		// create a composition to represent our 2D-scene
+		auto const comp = create_composition(json);
+		if (!comp) {
+			return nullptr;
+		}
 
 		auto const self = new Window(instance, comp, json);
 
@@ -95,31 +141,15 @@ public:
 		title.append(comp->device()->adapter_name());
 		title.append("]");
 
-		auto const hwnd = CreateWindow(class_name,
-			to_utf16(title).c_str(),
-			WS_OVERLAPPEDWINDOW,
-			CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
-			nullptr,
-			nullptr,
-			instance,
-			(LPVOID)self);
+		auto out_hwnd = create_out_window(instance, title, 640, 360);
+		auto in_hwnd = create_in_window(instance, out_hwnd, (LPVOID)self, window_width(), window_height());
 
-		if (IsWindow(hwnd))
+		if (IsWindow(in_hwnd))
 		{
-			// AdjustWindowRect can do something similar
-			RECT rc_outer, rc_inner;
-			GetWindowRect(hwnd, &rc_outer);
-			GetClientRect(hwnd, &rc_inner);
-
-			SetWindowPos(hwnd, nullptr, 0, 0,
-				width + ((rc_outer.right - rc_outer.left) - (rc_inner.right - rc_inner.left)),
-				height + ((rc_outer.bottom - rc_outer.top) - (rc_inner.bottom - rc_inner.top)),
-				SWP_NOMOVE | SWP_NOZORDER);
-
 			windows_.push_back(self);
 
 			// make the window visible now that we have D3D11 components ready
-			self->show();
+			ShowWindow(out_hwnd, SW_SHOWNORMAL);
 
 			return self;
 		}
