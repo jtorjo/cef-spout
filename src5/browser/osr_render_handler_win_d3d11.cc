@@ -2,12 +2,14 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefclient/browser/osr_render_handler_win_d3d11.h"
+#include "osr_render_handler_win_d3d11.h"
 
 #include "include/base/cef_bind.h"
 #include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_helpers.h"
 #include "tests/shared/browser/util_win.h"
+
+#include "../spoutDX.h"
 
 namespace client {
 
@@ -21,8 +23,8 @@ void BrowserLayer::render(const std::shared_ptr<d3d11::Context>& ctx) {
   render_texture(ctx, frame_buffer_->texture());
 }
 
-void BrowserLayer::on_paint(void* share_handle) {
-  frame_buffer_->on_paint(share_handle);
+void BrowserLayer::on_paint(void* share_handle, spoutDX * sender) {
+  frame_buffer_->on_paint(share_handle, sender);
 }
 
 std::pair<uint32_t, uint32_t> BrowserLayer::texture_size() const {
@@ -79,11 +81,24 @@ bool OsrRenderHandlerWinD3D11::Initialize(CefRefPtr<CefBrowser> browser,
                                           int height) {
   CEF_REQUIRE_UI_THREAD();
 
+
+  sender_ = std::make_shared<spoutDX>();
+  auto ok = sender_->OpenDirectX11();
+  if (!ok) {
+      LOG(FATAL) << "can't open directx11";
+      return false;
+  }
+
   // Create a D3D11 device instance.
-  device_ = d3d11::Device::create();
+  //device_ = d3d11::Device::create();
+  device_ = std::make_shared<d3d11::Device>(sender_->GetDX11Device(), sender_->GetDX11Context());
   DCHECK(device_);
   if (!device_)
     return false;
+
+  sender_->SetSenderName("Simple Windows sender");
+  sender_->SetSenderFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+  sender_->SetMaxSenders(10);
 
   // Create a D3D11 swapchain for the window.
   swap_chain_ = device_->create_swapchain(hwnd());
@@ -181,9 +196,9 @@ void OsrRenderHandlerWinD3D11::OnAcceleratedPaint(
   CEF_REQUIRE_UI_THREAD();
 
   if (type == PET_POPUP) {
-    popup_layer_->on_paint(share_handle);
+    popup_layer_->on_paint(share_handle, sender_.get());
   } else {
-    browser_layer_->on_paint(share_handle);
+    browser_layer_->on_paint(share_handle, sender_.get());
   }
 
   Render();
@@ -200,8 +215,7 @@ void OsrRenderHandlerWinD3D11::Render() {
   const auto texture_size = browser_layer_->texture_size();
 
   // Resize the composition and swap chain to match the texture if necessary.
-  composition_->resize(!send_begin_frame(), texture_size.first,
-                       texture_size.second);
+  composition_->resize(!send_begin_frame(), texture_size.first, texture_size.second);
   swap_chain_->resize(texture_size.first, texture_size.second);
 
   // Clear the render target.

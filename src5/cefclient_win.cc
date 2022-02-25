@@ -50,7 +50,9 @@ int RunMain(HINSTANCE hInstance, int nCmdShow) {
 
   // Parse command-line arguments.
   CefRefPtr<CefCommandLine> command_line = CefCommandLine::CreateCommandLine();
-  command_line->InitFromString(::GetCommandLineW());
+  std::wstring cmd_line = ::GetCommandLineW();
+  cmd_line += L" --off-screen-rendering-enabled --enable-gpu --off-screen-frame-rate=60 --multi-threaded-message-loop --shared-texture-enabled --no-sandbox";
+  command_line->InitFromString( cmd_line.c_str());
 
   // Create a ClientApp of the correct type.
   CefRefPtr<CefApp> app;

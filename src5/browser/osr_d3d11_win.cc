@@ -14,7 +14,7 @@
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
 
-#include "tests/cefclient/browser/osr_d3d11_win.h"
+#include "osr_d3d11_win.h"
 
 #include <iomanip>  // For std::setw.
 
@@ -27,6 +27,8 @@
 #include "include/base/cef_logging.h"
 #include "include/internal/cef_string.h"
 #include "tests/shared/browser/util_win.h"
+
+#include "../SpoutDX.h"
 
 namespace client {
 namespace d3d11 {
@@ -930,13 +932,15 @@ void Composition::render(const std::shared_ptr<Context>& ctx) {
 FrameBuffer::FrameBuffer(const std::shared_ptr<Device>& device)
     : device_(device) {}
 
-void FrameBuffer::on_paint(void* shared_handle) {
+void FrameBuffer::on_paint(void* shared_handle, spoutDX * sender) {
   // New shared texture every call
   shared_buffer_.reset();
 
   // Open the shared texture.
   shared_buffer_ = device_->open_shared_texture((void*)shared_handle);
-  if (!shared_buffer_) {
+  if (shared_buffer_) {
+      sender->SendTexture(shared_buffer_->texture_handle());
+  } else  {
     LOG(ERROR) << "d3d11: Could not open shared texture!";
   }
 }

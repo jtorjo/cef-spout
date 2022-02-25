@@ -6,9 +6,11 @@
 #define CEF_TESTS_CEFCLIENT_BROWSER_OSR_RENDER_HANDLER_WIN_D3D11_H_
 #pragma once
 
-#include "tests/cefclient/browser/osr_d3d11_win.h"
-#include "tests/cefclient/browser/osr_render_handler_win.h"
-#include "tests/cefclient/browser/osr_renderer_settings.h"
+#include "osr_d3d11_win.h"
+#include "osr_render_handler_win.h"
+#include "osr_renderer_settings.h"
+
+class spoutDX;
 
 namespace client {
 
@@ -18,7 +20,7 @@ class BrowserLayer : public d3d11::Layer {
 
   void render(const std::shared_ptr<d3d11::Context>& ctx) OVERRIDE;
 
-  void on_paint(void* share_handle);
+  void on_paint(void* share_handle, spoutDX * sender);
 
   // After calling on_paint() we can query the texture size.
   std::pair<uint32_t, uint32_t> texture_size() const;
@@ -81,6 +83,8 @@ class OsrRenderHandlerWinD3D11 : public OsrRenderHandlerWin {
   std::shared_ptr<d3d11::Composition> composition_;
   std::shared_ptr<BrowserLayer> browser_layer_;
   std::shared_ptr<PopupLayer> popup_layer_;
+
+ std::shared_ptr<spoutDX> sender_;
 
   DISALLOW_COPY_AND_ASSIGN(OsrRenderHandlerWinD3D11);
 };

@@ -26,6 +26,8 @@
 
 #include "include/base/cef_macros.h"
 
+class spoutDX;
+
 namespace client {
 namespace d3d11 {
 
@@ -186,6 +188,7 @@ class Texture2D {
 
   void copy_from(const std::shared_ptr<Texture2D>&);
 
+  ID3D11Texture2D * texture_handle() const { return &*texture_; }
  private:
   HANDLE share_handle_;
 
@@ -316,7 +319,7 @@ class FrameBuffer {
   explicit FrameBuffer(const std::shared_ptr<Device>& device);
 
   // Called in response to CEF's OnAcceleratedPaint notification.
-  void on_paint(void* shared_handle);
+  void on_paint(void* shared_handle, spoutDX * sender);
 
   // Returns what should be considered the front buffer.
   std::shared_ptr<Texture2D> texture() const { return shared_buffer_; }
