@@ -115,7 +115,6 @@ void ClientHandlerOsr::OnAcceleratedPaint(
   CEF_REQUIRE_UI_THREAD();
   if (!osr_delegate_)
     return;
-    LOG(INFO) << "on_accelerated_paint (3)";
   osr_delegate_->OnAcceleratedPaint(browser, type, dirtyRects, share_handle);
 }
 

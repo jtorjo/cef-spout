@@ -471,7 +471,6 @@ void OsrRenderer::OnAcceleratedPaint(
     CefRenderHandler::PaintElementType type,
     const CefRenderHandler::RectList& dirtyRects,
     void* shared_handle) {
-    LOG(INFO) << "on_accelerated_paint (6)";
 #ifdef OS_MACOSX
   if (!initialized_)
     Initialize();

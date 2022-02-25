@@ -1022,7 +1022,6 @@ void OsrWindowWin::OnAcceleratedPaint(
     const CefRenderHandler::RectList& dirtyRects,
     void* share_handle) {
   EnsureRenderHandler();
-    LOG(INFO) << "on_accelerated_paint (4)";
   render_handler_->OnAcceleratedPaint(browser, type, dirtyRects, share_handle);
 }
 
