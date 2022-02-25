@@ -51,7 +51,7 @@ int RunMain(HINSTANCE hInstance, int nCmdShow) {
   // Parse command-line arguments.
   CefRefPtr<CefCommandLine> command_line = CefCommandLine::CreateCommandLine();
   std::wstring cmd_line = ::GetCommandLineW();
-  cmd_line += L" --off-screen-rendering-enabled --enable-gpu --off-screen-frame-rate=60 --multi-threaded-message-loop --shared-texture-enabled --no-sandbox";
+  cmd_line += L" --off-screen-rendering-enabled --enable-gpu --off-screen-frame-rate=60 --multi-threaded-message-loop --shared-texture-enabled --no-sandbox --url=file://D:/john/cef_browser/cef-test/b-cef-test/index.html";
   command_line->InitFromString( cmd_line.c_str());
 
   // Create a ClientApp of the correct type.

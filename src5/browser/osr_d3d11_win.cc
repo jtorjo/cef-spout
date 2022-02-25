@@ -926,6 +926,7 @@ void Composition::render(const std::shared_ptr<Context>& ctx) {
     fps_ = frame_ / double((now - fps_start_) / 1000000.0);
     frame_ = 0;
     fps_start_ = now;
+    LOG(INFO) << "render " << fps_;
   }
 }
 
