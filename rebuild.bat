@@ -1,4 +1,5 @@
 rmdir build /Q /S
+dir build
 pause
 mkdir build
 cd build
