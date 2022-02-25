@@ -6,6 +6,9 @@
 # Source files.
 #
 
+#AUX_SOURCE_DIRECTORY(spout_src_files "../lib_spout/SpoutGL/*.cpp")
+#AUX_SOURCE_DIRECTORY(spout_inc_files "../lib_spout/SpoutGL/*.h")
+
 # cefclient browser sources.
 set(CEFCLIENT_BROWSER_BROWSER_SRCS
   browser/binding_test.cc
@@ -68,6 +71,8 @@ set(CEFCLIENT_BROWSER_BROWSER_SRCS
   SpoutDX.h
   SpoutDX.cpp
   platform.h
+  ${spout_src_files}
+  ${spout_inc_files}
   )
 source_group(cefclient\\\\browser FILES ${CEFCLIENT_BROWSER_BROWSER_SRCS})
 
@@ -388,7 +393,7 @@ set(CEFCLIENT_RESOURCES_SRCS
 #
 
 # Target executable names.
-set(CEF_TARGET "cefclient")
+set(CEF_TARGET "cef_spout")
 if(OS_MACOSX)
   set(CEF_HELPER_TARGET "cefclient_Helper")
   set(CEF_HELPER_OUTPUT_NAME "cefclient Helper")

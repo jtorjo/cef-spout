@@ -24,11 +24,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Execute FindCEF.cmake which must exist in CMAKE_MODULE_PATH.
 find_package(CEF REQUIRED)
 
-# we only bother with UNICODE builds on Windows
-if(MSVC)
-	add_definitions(-DUNICODE -D_UNICODE)
-endif()
-
 set(
     CMAKE_RUNTIME_OUTPUT_DIRECTORY
     ${CMAKE_HOME_DIRECTORY}/bin
@@ -43,6 +38,10 @@ set(
     TARGET_OUTPUT_DIRECTORY
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>
     )
+
+# we only bother with UNICODE builds on Windows
+add_definitions(-DUNICODE -D_UNICODE)
+
 
 
 # Spout-related configuration
