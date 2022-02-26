@@ -291,6 +291,41 @@ void Texture2D::copy_from(const std::shared_ptr<Texture2D>& other) {
   }
 }
 
+void Texture2D::copy_from(const void* buffer, uint32_t stride, uint32_t rows)
+{
+	if (!buffer) {
+		return;
+	}
+
+	ID3D11DeviceContext* d3d11_ctx = (ID3D11DeviceContext*)(*ctx_);
+	assert(d3d11_ctx);
+
+	D3D11_MAPPED_SUBRESOURCE res;
+	auto const hr = d3d11_ctx->Map(texture_.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &res);
+	if (SUCCEEDED(hr))
+	{
+		if (rows == height())
+		{
+			if (res.RowPitch == stride) {
+				memcpy(res.pData, buffer, stride * rows);
+			}
+			else {
+				const uint8_t* src = (const uint8_t*)buffer;
+				uint8_t* dst = (uint8_t*)res.pData;
+				uint32_t cb = res.RowPitch < stride ? res.RowPitch : stride;
+				for (uint32_t y = 0; y < rows; ++y)
+				{
+					memcpy(dst, src, cb);
+					src += stride;
+					dst += res.RowPitch;					
+				}
+			}
+		}
+
+		d3d11_ctx->Unmap(texture_.get(), 0);	
+	}
+}
+
 Device::Device(ID3D11Device* pdev, ID3D11DeviceContext* pctx)
     : device_(to_com_ptr(pdev)), ctx_(std::make_shared<Context>(pctx)) {
   lib_compiler_ = LoadLibrary(L"d3dcompiler_47.dll");
@@ -931,20 +966,30 @@ void Composition::render(const std::shared_ptr<Context>& ctx) {
 }
 
 FrameBuffer::FrameBuffer(const std::shared_ptr<Device>& device)
-    : device_(device) {}
+    : device_(device) {
+    width_ = height_ = 0;
+}
 
 void FrameBuffer::on_paint(void* shared_handle, spoutDX * sender) {
-  // New shared texture every call
-  shared_buffer_.reset();
-
-  // Open the shared texture.
-  shared_buffer_ = device_->open_shared_texture((void*)shared_handle);
-  if (shared_buffer_) {
-      sender->SendTexture(shared_buffer_->texture_handle());
-  } else  {
-    LOG(ERROR) << "d3d11: Could not open shared texture!";
-  }
+    shared_buffer_.reset();
+    shared_buffer_ = device_->open_shared_texture((void*)shared_handle);
+    if (!shared_buffer_) {
+        LOG(ERROR) << "d3d11: Could not open shared texture!";
+    } 
 }
+
+void FrameBuffer::resize(uint32_t width, uint32_t height, spoutDX * sender) {
+    if (width_ != width || height_ != height) {
+        width_ = width;
+        height_ = height;
+        //shared_buffer_ = device_->create_texture(width, height, DXGI_FORMAT_B8G8R8A8_UNORM, nullptr, 0);
+
+        ID3D11Texture2D *txt = nullptr;
+        sender->CreateDX11StagingTexture(width_, height_, DXGI_FORMAT_B8G8R8A8_UNORM, &txt);
+        shared_buffer_ = std::make_shared<d3d11::Texture2D>(txt, nullptr, nullptr, nullptr);
+    }
+}
+
 
 }  // namespace d3d11
 }  // namespace client

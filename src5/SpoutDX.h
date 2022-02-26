@@ -209,6 +209,7 @@ class SPOUT_DLLEXP spoutDX {
 	bool CreateDX11texture(ID3D11Device* pd3dDevice,
 		unsigned int width, unsigned int height,
 		DXGI_FORMAT format, ID3D11Texture2D** ppTexture);
+	bool CreateDX11StagingTexture(unsigned int width, unsigned int height, DXGI_FORMAT format, ID3D11Texture2D** pStagingTexture);
 	
 	//
 	// Data sharing
@@ -285,7 +286,6 @@ protected :
 	
 	// Create staging textures
 	bool CheckStagingTextures(unsigned int width, unsigned int height, DWORD dwFormat = DXGI_FORMAT_B8G8R8A8_UNORM);
-	bool CreateDX11StagingTexture(unsigned int width, unsigned int height, DXGI_FORMAT format, ID3D11Texture2D** pStagingTexture);
 
 	// Create or update class texture
 	bool CheckTexture(unsigned int width, unsigned int height, DWORD dwFormat);

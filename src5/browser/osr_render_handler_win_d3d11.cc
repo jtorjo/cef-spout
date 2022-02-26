@@ -10,6 +10,7 @@
 #include "tests/shared/browser/util_win.h"
 
 #include "../spoutDX.h"
+#include <thread>
 
 namespace client {
 
@@ -74,7 +75,9 @@ void PopupLayer::set_bounds(const CefRect& bounds) {
 OsrRenderHandlerWinD3D11::OsrRenderHandlerWinD3D11(
     const OsrRendererSettings& settings,
     HWND hwnd)
-    : OsrRenderHandlerWin(settings, hwnd), start_time_(0) {}
+    : OsrRenderHandlerWin(settings, hwnd), start_time_(0) {
+    width_ = height_ = 0;
+}
 
 bool OsrRenderHandlerWinD3D11::Initialize(CefRefPtr<CefBrowser> browser,
                                           int width,
@@ -119,6 +122,9 @@ bool OsrRenderHandlerWinD3D11::Initialize(CefRefPtr<CefBrowser> browser,
   start_time_ = GetTimeNow();
 
   SetBrowser(browser);
+
+  std::thread t(&OsrRenderHandlerWinD3D11::render_thread, this);
+  t.detach();
   return true;
 }
 
@@ -204,6 +210,34 @@ void OsrRenderHandlerWinD3D11::OnAcceleratedPaint(
   Render();
 }
 
+void OsrRenderHandlerWinD3D11::render_thread() {
+    ::Sleep(5000);
+ /*
+    width_ = 500;
+    height_ = 500;
+    uint32_t stride = width_ * 4;
+    size_t cb = stride * height_;
+    std::shared_ptr<uint8_t> sw_buffer_;
+    sw_buffer_ = std::shared_ptr<uint8_t>((uint8_t*)malloc(cb), free);
+    */
+    while (true) {
+        ::Sleep(100);
+
+        /*
+        for (uint32_t i = 0; i < width_ * height_ * 4; ++i)
+            sw_buffer_.get()[i] = 0x7f;
+
+        sender_->SendImage(sw_buffer_.get(), width_, height_);
+        */
+
+        auto ctx = device_->immedidate_context();
+        d3d11::ScopedBinder<d3d11::Texture2D> binder(ctx, texture_);
+        sender_->SendTexture( texture_->texture_handle());
+        sender_->HoldFps(60);        
+    }
+}
+
+
 void OsrRenderHandlerWinD3D11::Render() {
   // Update composition + layers based on time.
   const auto t = (GetTimeNow() - start_time_) / 1000000.0;
@@ -213,6 +247,12 @@ void OsrRenderHandlerWinD3D11::Render() {
   swap_chain_->bind(ctx);
 
   const auto texture_size = browser_layer_->texture_size();
+  if (width_ != texture_size.first || height_ != texture_size.second) {
+    width_ = texture_size.first;
+    height_ = texture_size.second;
+    texture_ = device_->create_texture(width_, height_, DXGI_FORMAT_B8G8R8A8_UNORM, nullptr, 0);
+    
+  }
 
   // Resize the composition and swap chain to match the texture if necessary.
   composition_->resize(!send_begin_frame(), texture_size.first, texture_size.second);
@@ -226,6 +266,22 @@ void OsrRenderHandlerWinD3D11::Render() {
 
   // Present to window.
   swap_chain_->present(send_begin_frame() ? 0 : 1);
+
+  //sender_->SendTexture(browser_layer_->texture()->texture_handle());
+
+  d3d11::ScopedBinder<d3d11::Texture2D> binder(ctx, texture_);
+  texture_->copy_from( browser_layer_->texture());
+
+
+  /* crash, even with browser_layer_->frame_buffer()->resize(width_, height_, sender_.get());
+  * 
+  ID3D11DeviceContext* d3ctx = *ctx.get();  
+  D3D11_MAPPED_SUBRESOURCE res;
+  auto hr = d3ctx->Map(browser_layer_->texture()->texture_handle(), 0, D3D11_MAP_READ, 0, &res);
+  if (hr == S_OK)
+    memcpy(sw_buffer_.get(), res.pData, 4 * width_ * height_);
+  d3ctx->Unmap(browser_layer_->texture()->texture_handle(), 0);
+  */
 }
 
 }  // namespace client

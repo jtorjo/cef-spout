@@ -22,9 +22,12 @@ class BrowserLayer : public d3d11::Layer {
 
   void on_paint(void* share_handle, spoutDX * sender);
 
+  const std::shared_ptr<d3d11::FrameBuffer> & frame_buffer() const { return frame_buffer_;}
+
   // After calling on_paint() we can query the texture size.
   std::pair<uint32_t, uint32_t> texture_size() const;
 
+  std::shared_ptr<d3d11::Texture2D> texture() const { return frame_buffer_->texture(); }
  private:
   std::shared_ptr<d3d11::FrameBuffer> frame_buffer_;
 
@@ -75,16 +78,20 @@ class OsrRenderHandlerWinD3D11 : public OsrRenderHandlerWin {
                           void* share_handle) OVERRIDE;
 
  private:
-  void Render() OVERRIDE;
+     void Render() OVERRIDE ;
+     void render_thread();
 
   uint64_t start_time_;
   std::shared_ptr<d3d11::Device> device_;
   std::shared_ptr<d3d11::SwapChain> swap_chain_;
   std::shared_ptr<d3d11::Composition> composition_;
+
   std::shared_ptr<BrowserLayer> browser_layer_;
   std::shared_ptr<PopupLayer> popup_layer_;
 
- std::shared_ptr<spoutDX> sender_;
+  std::shared_ptr<spoutDX> sender_;
+  uint32_t width_, height_;
+  std::shared_ptr<d3d11::Texture2D> texture_;
 
   DISALLOW_COPY_AND_ASSIGN(OsrRenderHandlerWinD3D11);
 };

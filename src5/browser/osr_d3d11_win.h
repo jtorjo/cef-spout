@@ -187,6 +187,7 @@ class Texture2D {
   void* share_handle() const;
 
   void copy_from(const std::shared_ptr<Texture2D>&);
+	void copy_from(const void* buffer, uint32_t stride, uint32_t rows);
 
   ID3D11Texture2D * texture_handle() const { return &*texture_; }
  private:
@@ -320,6 +321,7 @@ class FrameBuffer {
 
   // Called in response to CEF's OnAcceleratedPaint notification.
   void on_paint(void* shared_handle, spoutDX * sender);
+  void resize(uint32_t width, uint32_t height, spoutDX * sender);
 
   // Returns what should be considered the front buffer.
   std::shared_ptr<Texture2D> texture() const { return shared_buffer_; }
@@ -327,6 +329,7 @@ class FrameBuffer {
  private:
   const std::shared_ptr<Device> device_;
   std::shared_ptr<Texture2D> shared_buffer_;
+  uint32_t width_, height_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameBuffer);
 };
