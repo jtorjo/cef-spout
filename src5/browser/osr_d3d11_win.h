@@ -153,6 +153,7 @@ class SwapChain {
   int width() const { return width_; }
   int height() const { return height_; }
 
+  ID3D11Texture2D* const get_buffer();
  private:
   const std::shared_ptr<ID3D11SamplerState> sampler_;
   const std::shared_ptr<ID3D11BlendState> blender_;

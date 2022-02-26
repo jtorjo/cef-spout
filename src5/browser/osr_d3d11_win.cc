@@ -104,6 +104,16 @@ void SwapChain::present(int sync_interval) {
   swapchain_->Present(sync_interval, 0);
 }
 
+ID3D11Texture2D* const SwapChain:: get_buffer() {
+  ID3D11Texture2D* buffer = nullptr;
+  auto hr = swapchain_->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "d3d11: Failed to get buffer ";
+    return nullptr;
+  }
+  return buffer;
+}
+
 void SwapChain::resize(int width, int height) {
   if (width <= 0 || height <= 0 || width == width_ || height == height_) {
     return;

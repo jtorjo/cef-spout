@@ -211,30 +211,8 @@ void OsrRenderHandlerWinD3D11::OnAcceleratedPaint(
 }
 
 void OsrRenderHandlerWinD3D11::render_thread() {
-    ::Sleep(5000);
- /*
-    width_ = 500;
-    height_ = 500;
-    uint32_t stride = width_ * 4;
-    size_t cb = stride * height_;
-    std::shared_ptr<uint8_t> sw_buffer_;
-    sw_buffer_ = std::shared_ptr<uint8_t>((uint8_t*)malloc(cb), free);
-    */
-    while (true) {
-        ::Sleep(100);
-
-        /*
-        for (uint32_t i = 0; i < width_ * height_ * 4; ++i)
-            sw_buffer_.get()[i] = 0x7f;
-
-        sender_->SendImage(sw_buffer_.get(), width_, height_);
-        */
-
-        auto ctx = device_->immedidate_context();
-        d3d11::ScopedBinder<d3d11::Texture2D> binder(ctx, texture_);
-        sender_->SendTexture( texture_->texture_handle());
-        sender_->HoldFps(60);        
-    }
+    // not needed
+    return;
 }
 
 
@@ -264,24 +242,10 @@ void OsrRenderHandlerWinD3D11::Render() {
   // Render the scene.
   composition_->render(ctx);
 
-  // Present to window.
+  // comment in order not to show on our window - it will only send to spout
   swap_chain_->present(send_begin_frame() ? 0 : 1);
 
-  //sender_->SendTexture(browser_layer_->texture()->texture_handle());
-
-  d3d11::ScopedBinder<d3d11::Texture2D> binder(ctx, texture_);
-  texture_->copy_from( browser_layer_->texture());
-
-
-  /* crash, even with browser_layer_->frame_buffer()->resize(width_, height_, sender_.get());
-  * 
-  ID3D11DeviceContext* d3ctx = *ctx.get();  
-  D3D11_MAPPED_SUBRESOURCE res;
-  auto hr = d3ctx->Map(browser_layer_->texture()->texture_handle(), 0, D3D11_MAP_READ, 0, &res);
-  if (hr == S_OK)
-    memcpy(sw_buffer_.get(), res.pData, 4 * width_ * height_);
-  d3ctx->Unmap(browser_layer_->texture()->texture_handle(), 0);
-  */
+  sender_->SendBackBuffer();
 }
 
 }  // namespace client
