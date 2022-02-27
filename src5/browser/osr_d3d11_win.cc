@@ -28,7 +28,7 @@
 #include "include/internal/cef_string.h"
 #include "shared/browser/util_win.h"
 
-#include "../SpoutDX.h"
+#include "src5/SpoutDX.h"
 
 namespace client {
 namespace d3d11 {

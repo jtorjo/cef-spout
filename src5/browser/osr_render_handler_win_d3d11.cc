@@ -9,7 +9,7 @@
 #include "include/wrapper/cef_helpers.h"
 #include "shared/browser/util_win.h"
 
-#include "../spoutDX.h"
+#include "src5/SpoutDX.h"
 #include <thread>
 
 namespace client {
