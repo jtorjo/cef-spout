@@ -53,7 +53,7 @@ int RunMain(HINSTANCE hInstance, int nCmdShow) {
   std::wstring cmd_line = ::GetCommandLineW();
   cmd_line += L" --off-screen-rendering-enabled --enable-gpu --off-screen-frame-rate=60 --multi-threaded-message-loop --shared-texture-enabled --no-sandbox";
     if (cmd_line.find(L"--url") == std::wstring::npos)
-        cmd_line += L"--url=file://D:/john/cef_browser/cef-test/b-cef-test/index.html";
+        cmd_line += L" --url=file://D:/john/cef_browser/cef-test/b-cef-test/index.html";
 
   command_line->InitFromString( cmd_line.c_str());
 
@@ -106,9 +106,13 @@ int RunMain(HINSTANCE hInstance, int nCmdShow) {
 
   RootWindowConfig window_config;
   window_config.always_on_top = command_line->HasSwitch(switches::kAlwaysOnTop);
-  window_config.with_controls =
-      !command_line->HasSwitch(switches::kHideControls);
+  //window_config.with_controls = !command_line->HasSwitch(switches::kHideControls);
+  window_config.with_controls = false;
   window_config.with_osr = settings.windowless_rendering_enabled ? true : false;
+    window_config.bounds.x = 10;
+    window_config.bounds.y = 10;
+    window_config.bounds.width = 500;
+    window_config.bounds.height = 200;
 
   // Create the first window.
   context->GetRootWindowManager()->CreateRootWindow(window_config);

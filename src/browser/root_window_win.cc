@@ -706,9 +706,11 @@ void RootWindowWin::OnSize(bool minimized) {
                           rect.right - x_offset, urlbar_height, SWP_NOZORDER);
 
     if (browser_hwnd) {
+        /* I don't want browser window to resize
       hdwp = DeferWindowPos(hdwp, browser_hwnd, NULL, rect.left, rect.top,
                             rect.right - rect.left, rect.bottom - rect.top,
                             SWP_NOZORDER);
+                            */
     }
 
     BOOL result = EndDeferWindowPos(hdwp);
@@ -716,7 +718,8 @@ void RootWindowWin::OnSize(bool minimized) {
     DCHECK(result);
   } else if (browser_window_) {
     // Size the browser window to the whole client area.
-    browser_window_->SetBounds(0, 0, rect.right, rect.bottom);
+    //browser_window_->SetBounds(0, 0, rect.right, rect.bottom);
+    //browser_window_->SetBounds(0, 0, 6000, 2000);
   }
 }
 
@@ -947,15 +950,19 @@ void RootWindowWin::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 
   if (!is_popup_) {
     // Create the browser window.
-    CefRect cef_rect(rect.left, rect.top, rect.right - rect.left,
-                     rect.bottom - rect.top);
-    browser_window_->CreateBrowser(hwnd_, cef_rect, browser_settings_, nullptr,
-                                   delegate_->GetRequestContext(this));
+    RECT osr_rect ;
+    osr_rect.left = 0;
+    osr_rect.top = 0;
+    osr_rect.right = 6000;
+    osr_rect.bottom = 2000;
+
+    CefRect cef_rect(osr_rect.left, osr_rect.top, osr_rect.right - osr_rect.left, osr_rect.bottom - osr_rect.top);
+
+    browser_window_->CreateBrowser(hwnd_, cef_rect, browser_settings_, nullptr, delegate_->GetRequestContext(this));
   } else {
     // With popups we already have a browser window. Parent the browser window
     // to the root window and show it in the correct location.
-    browser_window_->ShowPopup(hwnd_, rect.left, rect.top,
-                               rect.right - rect.left, rect.bottom - rect.top);
+    browser_window_->ShowPopup(hwnd_, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
   }
 }
 

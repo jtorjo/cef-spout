@@ -124,9 +124,7 @@ void OsrWindowWin::CreateBrowser(HWND parent_hwnd,
                                  const std::string& startup_url) {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute this method on the UI thread.
-    CreateBrowserHelper* helper =
-        new CreateBrowserHelper(parent_hwnd, rect, handler, startup_url,
-                                settings, extra_info, request_context, this);
+    CreateBrowserHelper* helper = new CreateBrowserHelper(parent_hwnd, rect, handler, startup_url, settings, extra_info, request_context, this);
     CefPostTask(TID_UI, base::Bind(CreateBrowserWithHelper, helper));
     return;
   }
@@ -143,8 +141,7 @@ void OsrWindowWin::CreateBrowser(HWND parent_hwnd,
   }
 
   window_info.shared_texture_enabled = settings_.shared_texture_enabled;
-  window_info.external_begin_frame_enabled =
-      settings_.external_begin_frame_enabled;
+  window_info.external_begin_frame_enabled = settings_.external_begin_frame_enabled;
 
   // Create the browser asynchronously.
   CefBrowserHost::CreateBrowser(window_info, handler, startup_url, settings,
@@ -158,8 +155,7 @@ void OsrWindowWin::ShowPopup(HWND parent_hwnd,
                              size_t height) {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute this method on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&OsrWindowWin::ShowPopup, this, parent_hwnd,
-                                   x, y, width, height));
+    CefPostTask(TID_UI, base::Bind(&OsrWindowWin::ShowPopup, this, parent_hwnd, x, y, width, height));
     return;
   }
 
@@ -228,8 +224,7 @@ void OsrWindowWin::Hide() {
 void OsrWindowWin::SetBounds(int x, int y, size_t width, size_t height) {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute this method on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&OsrWindowWin::SetBounds, this, x, y, width,
-                                   height));
+    CefPostTask(TID_UI, base::Bind(&OsrWindowWin::SetBounds, this, x, y, width, height));
     return;
   }
 
@@ -296,7 +291,7 @@ void OsrWindowWin::Create(HWND parent_hwnd, const RECT& rect) {
   // OSR windows.
   hwnd_ = ::CreateWindowEx(
       ex_style, kWndClass, 0,
-      WS_BORDER | WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
+      WS_CHILDWINDOW | WS_VISIBLE,
       rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
       parent_hwnd, 0, hInst, 0);
   CHECK(hwnd_);
