@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefclient/browser/preferences_test.h"
+#include "src5/browser/preferences_test.h"
 
 #include <sstream>
 #include <string>
@@ -11,7 +11,7 @@
 #include "include/base/cef_logging.h"
 #include "include/cef_command_line.h"
 #include "include/cef_parser.h"
-#include "tests/cefclient/browser/test_runner.h"
+#include "src5/browser/test_runner.h"
 
 namespace client {
 namespace preferences_test {

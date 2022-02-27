@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "tests/cefclient/browser/resource.h"
+#include "src5/browser/resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////

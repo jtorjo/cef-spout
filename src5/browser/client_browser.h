@@ -7,7 +7,7 @@
 #pragma once
 
 #include "include/cef_base.h"
-#include "tests/shared/browser/client_app_browser.h"
+#include "shared/browser/client_app_browser.h"
 
 namespace client {
 namespace browser {

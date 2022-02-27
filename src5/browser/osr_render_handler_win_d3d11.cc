@@ -7,7 +7,7 @@
 #include "include/base/cef_bind.h"
 #include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_helpers.h"
-#include "tests/shared/browser/util_win.h"
+#include "shared/browser/util_win.h"
 
 #include "../spoutDX.h"
 #include <thread>

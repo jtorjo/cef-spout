@@ -3,8 +3,8 @@
 // can be found in the LICENSE file.
 
 #include "include/cef_v8.h"
-#include "tests/cefclient/renderer/performance_test.h"
-#include "tests/cefclient/renderer/performance_test_setup.h"
+#include "src5/renderer/performance_test.h"
+#include "src5/renderer/performance_test_setup.h"
 
 namespace client {
 namespace performance_test {

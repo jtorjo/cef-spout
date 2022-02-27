@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/shared/browser/main_message_loop_std.h"
+#include "shared/browser/main_message_loop_std.h"
 
 #include "include/cef_app.h"
 

@@ -2,13 +2,13 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefclient/browser/client_browser.h"
-#include "tests/cefclient/browser/main_context.h"
+#include "src5/browser/client_browser.h"
+#include "src5/browser/main_context.h"
 
 #include "include/cef_command_line.h"
 #include "include/cef_crash_util.h"
 #include "include/cef_file_util.h"
-#include "tests/shared/common/client_switches.h"
+#include "shared/common/client_switches.h"
 
 namespace client {
 namespace browser {

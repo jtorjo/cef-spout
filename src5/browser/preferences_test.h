@@ -6,7 +6,7 @@
 #define CEF_TESTS_CEFCLIENT_BROWSER_PREFERENCES_TEST_H_
 #pragma once
 
-#include "tests/cefclient/browser/test_runner.h"
+#include "src5/browser/test_runner.h"
 
 namespace client {
 namespace preferences_test {

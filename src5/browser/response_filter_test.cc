@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefclient/browser/response_filter_test.h"
+#include "src5/browser/response_filter_test.h"
 
 #include <algorithm>
 #include <sstream>
@@ -10,8 +10,8 @@
 
 #include "include/base/cef_logging.h"
 #include "include/cef_command_line.h"
-#include "tests/cefclient/browser/test_runner.h"
-#include "tests/shared/common/client_switches.h"
+#include "src5/browser/test_runner.h"
+#include "shared/common/client_switches.h"
 
 namespace client {
 namespace response_filter_test {

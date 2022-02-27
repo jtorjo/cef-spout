@@ -6,8 +6,8 @@
 #define CEF_TESTS_CEFCLIENT_BROWSER_BROWSER_WINDOW_OSR_WIN_H_
 #pragma once
 
-#include "tests/cefclient/browser/browser_window.h"
-#include "tests/cefclient/browser/osr_window_win.h"
+#include "src5/browser/browser_window.h"
+#include "src5/browser/osr_window_win.h"
 
 namespace client {
 

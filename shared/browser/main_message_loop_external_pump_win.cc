@@ -2,12 +2,12 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/shared/browser/main_message_loop_external_pump.h"
+#include "shared/browser/main_message_loop_external_pump.h"
 
 #include <CommCtrl.h>
 
 #include "include/cef_app.h"
-#include "tests/shared/browser/util_win.h"
+#include "shared/browser/util_win.h"
 
 namespace client {
 

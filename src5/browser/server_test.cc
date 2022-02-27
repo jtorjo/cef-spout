@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefclient/browser/server_test.h"
+#include "src5/browser/server_test.h"
 
 #include <algorithm>
 #include <string>
@@ -12,7 +12,7 @@
 #include "include/cef_parser.h"
 #include "include/cef_server.h"
 #include "include/wrapper/cef_closure_task.h"
-#include "tests/shared/browser/resource_util.h"
+#include "shared/browser/resource_util.h"
 
 namespace client {
 namespace server_test {

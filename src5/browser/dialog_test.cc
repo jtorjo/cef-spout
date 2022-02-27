@@ -2,14 +2,14 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefclient/browser/dialog_test.h"
+#include "src5/browser/dialog_test.h"
 
 #include <string>
 
 #include "include/cef_browser.h"
 #include "include/wrapper/cef_helpers.h"
-#include "tests/cefclient/browser/test_runner.h"
-#include "tests/shared/browser/file_util.h"
+#include "src5/browser/test_runner.h"
+#include "shared/browser/file_util.h"
 
 namespace client {
 namespace dialog_test {

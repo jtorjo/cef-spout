@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefclient/browser/test_runner.h"
+#include "src5/browser/test_runner.h"
 
 #include <map>
 #include <set>
@@ -15,21 +15,21 @@
 #include "include/cef_web_plugin.h"
 #include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_stream_resource_handler.h"
-#include "tests/cefclient/browser/binding_test.h"
-#include "tests/cefclient/browser/client_handler.h"
-#include "tests/cefclient/browser/dialog_test.h"
-#include "tests/cefclient/browser/drm_test.h"
-#include "tests/cefclient/browser/main_context.h"
-#include "tests/cefclient/browser/media_router_test.h"
-#include "tests/cefclient/browser/preferences_test.h"
-#include "tests/cefclient/browser/resource.h"
-#include "tests/cefclient/browser/response_filter_test.h"
-#include "tests/cefclient/browser/root_window_manager.h"
-#include "tests/cefclient/browser/scheme_test.h"
-#include "tests/cefclient/browser/server_test.h"
-#include "tests/cefclient/browser/urlrequest_test.h"
-#include "tests/cefclient/browser/window_test.h"
-#include "tests/shared/browser/resource_util.h"
+#include "src5/browser/binding_test.h"
+#include "src5/browser/client_handler.h"
+#include "src5/browser/dialog_test.h"
+#include "src5/browser/drm_test.h"
+#include "src5/browser/main_context.h"
+#include "src5/browser/media_router_test.h"
+#include "src5/browser/preferences_test.h"
+#include "src5/browser/resource.h"
+#include "src5/browser/response_filter_test.h"
+#include "src5/browser/root_window_manager.h"
+#include "src5/browser/scheme_test.h"
+#include "src5/browser/server_test.h"
+#include "src5/browser/urlrequest_test.h"
+#include "src5/browser/window_test.h"
+#include "shared/browser/resource_util.h"
 
 namespace client {
 namespace test_runner {

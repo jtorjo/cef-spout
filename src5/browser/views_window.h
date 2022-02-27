@@ -22,8 +22,8 @@
 #include "include/views/cef_textfield_delegate.h"
 #include "include/views/cef_window.h"
 #include "include/views/cef_window_delegate.h"
-#include "tests/cefclient/browser/image_cache.h"
-#include "tests/cefclient/browser/views_menu_bar.h"
+#include "src5/browser/image_cache.h"
+#include "src5/browser/views_menu_bar.h"
 
 namespace client {
 

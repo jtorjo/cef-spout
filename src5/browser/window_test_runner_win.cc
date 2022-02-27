@@ -2,9 +2,9 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefclient/browser/window_test_runner_win.h"
+#include "src5/browser/window_test_runner_win.h"
 
-#include "tests/shared/browser/main_message_loop.h"
+#include "shared/browser/main_message_loop.h"
 
 namespace client {
 namespace window_test {

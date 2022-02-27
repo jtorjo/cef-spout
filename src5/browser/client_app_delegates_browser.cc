@@ -2,12 +2,12 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/shared/browser/client_app_browser.h"
+#include "shared/browser/client_app_browser.h"
 
-#include "tests/cefclient/browser/client_browser.h"
+#include "src5/browser/client_browser.h"
 
 #if defined(OS_LINUX)
-#include "tests/cefclient/browser/print_handler_gtk.h"
+#include "src5/browser/print_handler_gtk.h"
 #endif
 
 namespace client {

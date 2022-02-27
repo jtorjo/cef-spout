@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefclient/browser/media_router_test.h"
+#include "src5/browser/media_router_test.h"
 
 #include <string>
 #include <vector>
@@ -10,7 +10,7 @@
 #include "include/base/cef_logging.h"
 #include "include/cef_media_router.h"
 #include "include/cef_parser.h"
-#include "tests/cefclient/browser/test_runner.h"
+#include "src5/browser/test_runner.h"
 
 namespace client {
 namespace media_router_test {

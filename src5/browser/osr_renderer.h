@@ -8,7 +8,7 @@
 
 #include "include/cef_browser.h"
 #include "include/cef_render_handler.h"
-#include "tests/cefclient/browser/osr_renderer_settings.h"
+#include "src5/browser/osr_renderer_settings.h"
 
 namespace client {
 

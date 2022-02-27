@@ -6,7 +6,7 @@
 #define CEF_TESTS_SHARED_COMMON_CLIENT_APP_OTHER_H_
 #pragma once
 
-#include "tests/shared/common/client_app.h"
+#include "shared/common/client_app.h"
 
 namespace client {
 

@@ -26,7 +26,7 @@
 
 #include "include/base/cef_logging.h"
 #include "include/internal/cef_string.h"
-#include "tests/shared/browser/util_win.h"
+#include "shared/browser/util_win.h"
 
 #include "../SpoutDX.h"
 

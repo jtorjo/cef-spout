@@ -6,7 +6,7 @@
 #define CEF_TESTS_SHARED_BROWSER_MAIN_MESSAGE_LOOP_EXTERNAL_PUMP_H_
 #pragma once
 
-#include "tests/shared/browser/main_message_loop_std.h"
+#include "shared/browser/main_message_loop_std.h"
 
 namespace client {
 

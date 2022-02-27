@@ -2,12 +2,12 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefclient/browser/osr_render_handler_win.h"
+#include "src5/browser/osr_render_handler_win.h"
 
 #include "include/base/cef_bind.h"
 #include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_helpers.h"
-#include "tests/shared/browser/util_win.h"
+#include "shared/browser/util_win.h"
 
 namespace client {
 

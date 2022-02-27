@@ -2,18 +2,18 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefclient/browser/root_window.h"
+#include "src5/browser/root_window.h"
 
 #if defined(OS_WIN) || defined(OS_LINUX)
-#include "tests/cefclient/browser/root_window_views.h"
+#include "src5/browser/root_window_views.h"
 #endif
 
 #if defined(OS_WIN)
-#include "tests/cefclient/browser/root_window_win.h"
+#include "src5/browser/root_window_win.h"
 #elif defined(OS_LINUX)
-#include "tests/cefclient/browser/root_window_gtk.h"
+#include "src5/browser/root_window_gtk.h"
 #elif defined(OS_MACOSX)
-#include "tests/cefclient/browser/root_window_mac.h"
+#include "src5/browser/root_window_mac.h"
 #endif
 
 namespace client {

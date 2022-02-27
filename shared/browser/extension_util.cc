@@ -2,14 +2,14 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/shared/browser/extension_util.h"
+#include "shared/browser/extension_util.h"
 
 #include "include/base/cef_bind.h"
 #include "include/cef_parser.h"
 #include "include/cef_path_util.h"
 #include "include/wrapper/cef_closure_task.h"
-#include "tests/shared/browser/file_util.h"
-#include "tests/shared/browser/resource_util.h"
+#include "shared/browser/file_util.h"
+#include "shared/browser/resource_util.h"
 
 namespace client {
 namespace extension_util {

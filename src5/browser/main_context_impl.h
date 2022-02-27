@@ -10,8 +10,8 @@
 #include "include/base/cef_thread_checker.h"
 #include "include/cef_app.h"
 #include "include/cef_command_line.h"
-#include "tests/cefclient/browser/main_context.h"
-#include "tests/cefclient/browser/root_window_manager.h"
+#include "src5/browser/main_context.h"
+#include "src5/browser/root_window_manager.h"
 
 namespace client {
 

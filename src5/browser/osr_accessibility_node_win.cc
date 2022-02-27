@@ -6,7 +6,7 @@
 // data back and forth between MSAA clients and CefClient renderers.
 // Sample implementation based on ui\accessibility\ax_platform_node_win.h
 
-#include "tests/cefclient/browser/osr_accessibility_node.h"
+#include "src5/browser/osr_accessibility_node.h"
 
 #if defined(CEF_USE_ATL)
 
@@ -14,7 +14,7 @@
 #include <oleacc.h>
 #include <string>
 
-#include "tests/cefclient/browser/osr_accessibility_helper.h"
+#include "src5/browser/osr_accessibility_helper.h"
 
 namespace client {
 
