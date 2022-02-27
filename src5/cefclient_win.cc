@@ -11,7 +11,7 @@
 #include "tests/cefclient/browser/main_message_loop_multithreaded_win.h"
 #include "tests/cefclient/browser/root_window_manager.h"
 #include "tests/cefclient/browser/test_runner.h"
-#include "tests/shared/browser/client_app_browser.h"
+#include "../shared/browser/client_app_browser.h"
 #include "tests/shared/browser/main_message_loop_external_pump.h"
 #include "tests/shared/browser/main_message_loop_std.h"
 #include "tests/shared/common/client_app_other.h"
@@ -51,7 +51,10 @@ int RunMain(HINSTANCE hInstance, int nCmdShow) {
   // Parse command-line arguments.
   CefRefPtr<CefCommandLine> command_line = CefCommandLine::CreateCommandLine();
   std::wstring cmd_line = ::GetCommandLineW();
-  cmd_line += L" --off-screen-rendering-enabled --enable-gpu --off-screen-frame-rate=60 --multi-threaded-message-loop --shared-texture-enabled --no-sandbox --url=file://D:/john/cef_browser/cef-test/b-cef-test/index.html";
+  cmd_line += L" --off-screen-rendering-enabled --enable-gpu --off-screen-frame-rate=60 --multi-threaded-message-loop --shared-texture-enabled --no-sandbox";
+    if (cmd_line.find(L"--url") == std::wstring::npos)
+        cmd_line += L"--url=file://D:/john/cef_browser/cef-test/b-cef-test/index.html";
+
   command_line->InitFromString( cmd_line.c_str());
 
   // Create a ClientApp of the correct type.
